@@ -21,9 +21,13 @@ def read(*paths):
 PACKAGE = 'apies'
 NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
-    'flask',
-    'elasticsearch',
+    'Flask>=0.11.1,<0.12.0',
+    'Flask-Cors>=3.0.2,<4.0.0',
+    'requests>=2.9.1,<3.0.0',
+    'elasticsearch>=5.0.0,<6.0.0',
     'datapackage',
+    'flask_jsonpify',
+    'demjson',
 ]
 LINT_REQUIRES = [
     'pylama',
