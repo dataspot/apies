@@ -1,5 +1,3 @@
-import demjson
-
 import elasticsearch
 
 from .query import Query
@@ -78,7 +76,7 @@ def _validate_types(text_fields, types):
 
 # ### Main API
 def search(es_client, index_name, text_fields,
-           types, term, from_date, to_date, 
+           types, term, from_date, to_date,
            size, offset, filters, dont_highlight):
     types = _validate_types(text_fields, types)
 
@@ -93,7 +91,7 @@ def search(es_client, index_name, text_fields,
 
     search_results = [
         dict(
-            source=_merge_highlight_into_source(hit['_source'], 
+            source=_merge_highlight_into_source(hit['_source'],
                                                hit['highlight'],
                                                dont_highlight),
             type=hit['_type'],

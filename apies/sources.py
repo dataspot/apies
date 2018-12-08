@@ -3,6 +3,7 @@ from copy import copy
 from datapackage import Package, Resource
 from tableschema import Field
 
+
 def _process_field(field: Field, rules, ret, prefix):
     schema_type = field['type']
     if schema_type == 'array':
@@ -20,11 +21,13 @@ def _process_field(field: Field, rules, ret, prefix):
             for suffix in rules.get(('es:title' in field, 'es:keyword' in field), ['']):
                 ret.append(search_field + suffix)
 
+
 def _process_schema(schema, rules, ret=[], prefix=''):
     fields = schema['fields']
     for f in fields:
         _process_field(f, rules, ret, prefix)
     return ret
+
 
 def extract_text_fields(sources, text_field_rules):
 
