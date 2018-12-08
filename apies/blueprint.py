@@ -1,6 +1,6 @@
 import logging
 
-from flask import Blueprint, request, app
+from flask import Blueprint, request, current_app
 from flask_jsonpify import jsonpify
 from flask.helpers import NotFound
 
@@ -17,10 +17,10 @@ DEFAULT_RULES = dict([
 
 
 def search_handler(types, search_term, from_date, to_date, size, offset):
-    es_client = app.config['ES_CLIENT']
-    index_name = app.config['INDEX_NAME']
-    text_fields = app.config['TEXT_FIELDS']
-    dont_highlight = app.config['DONT_HIGHLIGHT']
+    es_client = current_app.config['ES_CLIENT']
+    index_name = current_app.config['INDEX_NAME']
+    text_fields = current_app.config['TEXT_FIELDS']
+    dont_highlight = current_app.config['DONT_HIGHLIGHT']
 
     try:
         types_formatted = str(types).split(',')
@@ -36,16 +36,17 @@ def search_handler(types, search_term, from_date, to_date, size, offset):
 
 
 def simple_search_handler(types, search_term):
-    es_client = app.config['ES_CLIENT']
-    index_name = app.config['INDEX_NAME']
-    text_fields = app.config['TEXT_FIELDS']
+    es_client = current_app.config['ES_CLIENT']
+    index_name = current_app.config['INDEX_NAME']
+    text_fields = current_app.config['TEXT_FIELDS']
+    dont_highlight = current_app.config['DONT_HIGHLIGHT']
 
     try:
         types_formatted = str(types).split(',')
         filters = request.values.get('filter')
         result = search(es_client, index_name, text_fields,
                         types_formatted, search_term,
-                        None, None, 100, 0, filters)
+                        None, None, 100, 0, filters, dont_highlight)
     except Exception as e:
         logging.exception('Error searching %s for tables: %s ' % (search_term, str(types)))
         result = {'error': str(e)}
@@ -53,9 +54,9 @@ def simple_search_handler(types, search_term):
 
 
 def count_handler(search_term, from_date, to_date):
-    es_client = app.config['ES_CLIENT']
-    index_name = app.config['INDEX_NAME']
-    text_fields = app.config['TEXT_FIELDS']
+    es_client = current_app.config['ES_CLIENT']
+    index_name = current_app.config['INDEX_NAME']
+    text_fields = current_app.config['TEXT_FIELDS']
 
     config = request.values.get('config')
     try:
@@ -70,9 +71,9 @@ def count_handler(search_term, from_date, to_date):
 
 
 def simple_count_handler(search_term):
-    es_client = app.config['ES_CLIENT']
-    index_name = app.config['INDEX_NAME']
-    text_fields = app.config['TEXT_FIELDS']
+    es_client = current_app.config['ES_CLIENT']
+    index_name = current_app.config['INDEX_NAME']
+    text_fields = current_app.config['TEXT_FIELDS']
 
     config = request.values.get('config')
     try:
@@ -86,9 +87,9 @@ def simple_count_handler(search_term):
 
 
 def timeline_handler(types, search_term, from_date, to_date):
-    es_client = app.config['ES_CLIENT']
-    index_name = app.config['INDEX_NAME']
-    text_fields = app.config['TEXT_FIELDS']
+    es_client = current_app.config['ES_CLIENT']
+    index_name = current_app.config['INDEX_NAME']
+    text_fields = current_app.config['TEXT_FIELDS']
 
     try:
         types_formatted = str(types).split(',')
@@ -103,9 +104,9 @@ def timeline_handler(types, search_term, from_date, to_date):
 
 
 def get_document_handler(doc_id):
-    es_client = app.config['ES_CLIENT']
-    index_name = app.config['INDEX_NAME']
-    doctype = app.config['DOCUMENT_DOCTYPE']
+    es_client = current_app.config['ES_CLIENT']
+    index_name = current_app.config['INDEX_NAME']
+    doctype = current_app.config['DOCUMENT_DOCTYPE']
 
     result = get_document(es_client, index_name,
                           doctype, doc_id)
@@ -115,45 +116,52 @@ def get_document_handler(doc_id):
     return jsonpify(result)
 
 
-def make_blueprint(sources,
+def make_blueprint(app,
+                   sources,
                    es_client,
                    index_name,
                    document_doctype='document',
                    dont_highlight=[],
                    text_field_rules=DEFAULT_RULES):
-    blueprint = Blueprint()
+    blueprint = Blueprint('apies', 'apies')
 
     blueprint.add_url_rule(
         '/search/<string:types>/<string:search_term>/'
         '<string:from_date>/<string:to_date>/'
         '<string:size>/<string:offset>',
+        'search_handler',
         search_handler,
         methods=['GET']
     )
     blueprint.add_url_rule(
         '/search/<string:types>/<string:search_term>',
+        'simple_search_handler',
         simple_search_handler,
         methods=['GET']
     )
     blueprint.add_url_rule(
         '/search/count/<string:search_term>/'
         '<string:from_date>/<string:to_date>',
+        'count_handler',
         count_handler,
         methods=['GET']
     )
     blueprint.add_url_rule(
         '/search/count/<string:search_term>',
+        'simple_count_handler',
         simple_count_handler,
         methods=['GET']
     )
     blueprint.add_url_rule(
         '/search/timeline/<string:types>/<string:search_term>/'
         '<string:from_date>/<string:to_date>',
+        'timeline_handler',
         timeline_handler,
         methods=['GET']
     )
     blueprint.add_url_rule(
         '/get/<path:doc_id>',
+        'get_document_handler',
         get_document_handler,
         methods=['GET']
     )

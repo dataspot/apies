@@ -115,7 +115,7 @@ def count(es_client, index_name, text_fields,
     counts = {}
     for item in config:
         doc_types = item['doc_types']
-        doc_types = _validate_types(doc_types)
+        doc_types = _validate_types(text_fields, doc_types)
         filters = item['filters']
         id = item['id']
         query_results = Query(doc_types)\

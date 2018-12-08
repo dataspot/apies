@@ -8,7 +8,7 @@ def _process_field(field: Field, rules, ret, prefix):
     schema_type = field['type']
     if schema_type == 'array':
         field = copy(field)
-        field.type = field['es:itemType']
+        field['type'] = field['es:itemType']
         return _process_field(field, rules, ret, prefix)
     enabled = field.get('es:index', True)
     subschema = {'fields': []}
@@ -42,3 +42,5 @@ def extract_text_fields(sources, text_field_rules):
         schema = resource.schema.descriptor
         text_fields = _process_schema(schema, text_field_rules)
         ret[type_name] = text_fields
+
+    return ret
