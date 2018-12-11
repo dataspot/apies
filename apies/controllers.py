@@ -80,25 +80,41 @@ def search(es_client, index_name, text_fields,
            size, offset, filters, dont_highlight):
     types = _validate_types(text_fields, types)
 
-    query_results = Query(types)\
-        .apply_term(term, text_fields)\
+    query_results = Query(types)
+    if term:
+        query_results = query_results.apply_term(term, text_fields)
+    query_results = query_results\
         .apply_filters(filters)\
         .apply_pagination(size, offset)\
-        .apply_scoring()\
-        .apply_highlighting()\
-        .apply_time_range(from_date, to_date)\
+        .apply_scoring()
+    if term and dont_highlight != '*' and '*' not in dont_highlight:
+        highlighted = True
+        query_results = query_results.apply_highlighting()
+    else:
+        highlighted = False
+    query_results = query_results.apply_time_range(from_date, to_date)\
         .run(es_client, index_name)
 
-    search_results = [
-        dict(
-            source=_merge_highlight_into_source(hit['_source'],
-                                               hit['highlight'],
-                                               dont_highlight),
-            type=hit['_type'],
-            score=hit['_score']
-        )
-        for hit in query_results['hits']['hits']
-    ]
+    if highlighted:
+        search_results = [
+            dict(
+                source=_merge_highlight_into_source(hit['_source'],
+                                                hit['highlight'],
+                                                dont_highlight),
+                type=hit['_type'],
+                score=hit['_score']
+            )
+            for hit in query_results['hits']['hits']
+        ]
+    else:
+        search_results = [
+            dict(
+                source=hit['_source'],
+                type=hit['_type'],
+                score=hit['_score']
+            )
+            for hit in query_results['hits']['hits']
+        ]
 
     return dict(
         search_counts=dict(

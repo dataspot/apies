@@ -35,6 +35,31 @@ def search_handler(types, search_term, from_date, to_date, size, offset):
     return jsonpify(result)
 
 
+def dynamic_search_handler(types):
+    es_client = current_app.config['ES_CLIENT']
+    index_name = current_app.config['INDEX_NAME']
+    text_fields = current_app.config['TEXT_FIELDS']
+    dont_highlight = current_app.config['DONT_HIGHLIGHT']
+
+    try:
+        types_formatted = str(types).split(',')
+        filters = request.values.get('filter')
+        search_term = request.values.get('q')
+        from_date = request.values.get('from_date', '1900-01-01')
+        to_date = request.values.get('to_date', '2100-01-01')
+        size = request.values.get('size', 10)
+        offset = request.values.get('offset', 0)
+        dont_highlight = request.values.get('dont_highlight') or dont_highlight
+        result = search(es_client, index_name, text_fields,
+                        types_formatted, search_term,
+                        from_date, to_date,
+                        size, offset, filters, dont_highlight)
+    except Exception as e:
+        logging.exception('Error searching %s for types: %s ' % (search_term, str(types)))
+        result = {'error': str(e)}
+    return jsonpify(result)
+
+
 def simple_search_handler(types, search_term):
     es_client = current_app.config['ES_CLIENT']
     index_name = current_app.config['INDEX_NAME']
@@ -131,6 +156,12 @@ def make_blueprint(app,
         '<string:size>/<string:offset>',
         'search_handler',
         search_handler,
+        methods=['GET']
+    )
+    blueprint.add_url_rule(
+        '/search/<string:types>',
+        'dynamic_search_handler',
+        dynamic_search_handler,
         methods=['GET']
     )
     blueprint.add_url_rule(
