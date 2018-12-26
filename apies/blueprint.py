@@ -95,7 +95,7 @@ def count_handler(search_term, from_date, to_date):
     return jsonpify(result)
 
 
-def simple_count_handler(search_term):
+def simple_count_handler():
     es_client = current_app.config['ES_CLIENT']
     index_name = current_app.config['INDEX_NAME']
     text_fields = current_app.config['TEXT_FIELDS']
@@ -103,8 +103,12 @@ def simple_count_handler(search_term):
     config = request.values.get('config')
     try:
         config = demjson.decode(config)
+        search_term = request.values.get('q')
+        from_date = request.values.get('from_date', '1900-01-01')
+        to_date = request.values.get('to_date', '2100-01-01')
         result = count(es_client, index_name, text_fields,
-                       search_term, None, None, config)
+                       search_term,
+                       from_date, to_date, config)
     except Exception as e:
         logging.exception('Error counting with config %r', config)
         result = {'error': str(e)}
@@ -159,6 +163,12 @@ def make_blueprint(app,
         methods=['GET']
     )
     blueprint.add_url_rule(
+        '/search/count',
+        'simple_count_handler',
+        simple_count_handler,
+        methods=['GET']
+    )
+    blueprint.add_url_rule(
         '/search/<string:types>',
         'dynamic_search_handler',
         dynamic_search_handler,
@@ -175,12 +185,6 @@ def make_blueprint(app,
         '<string:from_date>/<string:to_date>',
         'count_handler',
         count_handler,
-        methods=['GET']
-    )
-    blueprint.add_url_rule(
-        '/search/count/<string:search_term>',
-        'simple_count_handler',
-        simple_count_handler,
         methods=['GET']
     )
     blueprint.add_url_rule(
