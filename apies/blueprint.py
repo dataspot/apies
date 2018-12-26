@@ -50,10 +50,16 @@ def dynamic_search_handler(types):
         size = request.values.get('size', 10)
         offset = request.values.get('offset', 0)
         dont_highlight = request.values.get('dont_highlight') or dont_highlight
+        order = request.values.get('order')
+        if order is not None:
+            if order != '_score':
+                order = {order: 'desc'}
+            order = [order]
         result = search(es_client, index_name, text_fields,
                         types_formatted, search_term,
                         from_date, to_date,
-                        size, offset, filters, dont_highlight)
+                        size, offset, filters, dont_highlight,
+                        score_treshold=0.5, sort_fields=order)
     except Exception as e:
         logging.exception('Error searching %s for types: %s ' % (search_term, str(types)))
         result = {'error': str(e)}
