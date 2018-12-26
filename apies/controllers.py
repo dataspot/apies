@@ -134,8 +134,10 @@ def count(es_client, index_name, text_fields,
         doc_types = _validate_types(text_fields, doc_types)
         filters = item['filters']
         id = item['id']
-        query_results = Query(doc_types)\
-            .apply_term(term, text_fields)\
+        query_results = Query(doc_types)
+        if term:
+            query_results = query_results.apply_term(term, text_fields)
+        query_results\
             .apply_filters(filters)\
             .apply_pagination(0, 0)\
             .apply_time_range(from_date, to_date)\
