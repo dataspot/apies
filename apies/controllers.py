@@ -86,8 +86,8 @@ def search(es_client,
            offset,
            filters,
            dont_highlight,
-           score_treshold = 0.5,
-           sort_fields = None):
+           score_treshold=0.5,
+           sort_fields=None):
     types = _validate_types(text_fields, types)
 
     query_results = Query(types)
