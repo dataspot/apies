@@ -75,23 +75,45 @@ def _validate_types(text_fields, types):
 
 
 # ### Main API
-def search(es_client, index_name, text_fields,
-           types, term, from_date, to_date,
-           size, offset, filters, dont_highlight):
+def search(es_client,
+           index_name,
+           text_fields,
+           types,
+           term,
+           from_date,
+           to_date,
+           size,
+           offset,
+           filters,
+           dont_highlight,
+           score_treshold=0.5,
+           sort_fields=None):
     types = _validate_types(text_fields, types)
 
     query_results = Query(types)
     if term:
         query_results = query_results.apply_term(term, text_fields)
-    query_results = query_results\
-        .apply_filters(filters)\
-        .apply_pagination(size, offset)\
-        .apply_scoring()
+
+    # Apply the filters
+    query_results = query_results.apply_filters(filters)
+
+    # Apply sorting - if there are fields to sort by, apply the scoring as the sorting
+    if sort_fields is None:
+        query_results.apply_scoring()
+    else:
+        query_results.apply_sorting(sort_fields, score_treshold)
+
+    # Apply pagination
+    query_results = query_results.apply_pagination(size, offset)
+
+    # Apply highlighting
     if term and dont_highlight != '*' and '*' not in dont_highlight:
         highlighted = True
         query_results = query_results.apply_highlighting()
     else:
         highlighted = False
+
+    # Apply the time range
     query_results = query_results.apply_time_range(from_date, to_date)\
         .run(es_client, index_name)
 

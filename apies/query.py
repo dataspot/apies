@@ -54,6 +54,16 @@ class Query():
         ))
         return self
 
+    def apply_sorting(self, sort_fields, score_treshold):
+        # Apply the scoring threshold - since we are no longer sorting by score, it is important to use a score
+        # threshold so as not to get irrelevant results
+        self.q.setdefault('min_score', score_treshold)
+
+        # Then sort by the sort fields, for example - {'__last_modified_at': {'order': 'desc'}}
+        self.q.setdefault('sort', sort_fields)
+
+        return self
+
     def apply_pagination(self, page_size, offset):
         self.q.update({
             'size': int(page_size),
