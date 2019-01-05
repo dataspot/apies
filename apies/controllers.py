@@ -120,6 +120,7 @@ def search(es_client,
     query_results = query_results.apply_time_range(from_date, to_date)\
         .run(es_client, index_name)
 
+    default_sort_score = (0,)
     if highlighted:
         search_results = [
             dict(
@@ -127,7 +128,7 @@ def search(es_client,
                                                 hit['highlight'],
                                                 dont_highlight),
                 type=hit['_type'],
-                score=hit['_score']
+                score=hit['_score'] or hit.get('sort', default_sort_score)[0]
             )
             for hit in query_results['hits']['hits']
         ]
@@ -136,7 +137,7 @@ def search(es_client,
             dict(
                 source=hit['_source'],
                 type=hit['_type'],
-                score=hit['_score']
+                score=hit['_score'] or hit.get('sort', default_sort_score)[0]
             )
             for hit in query_results['hits']['hits']
         ]
