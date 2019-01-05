@@ -99,7 +99,10 @@ def search(es_client,
 
     # Apply sorting - if there are fields to sort by, apply the scoring as the sorting
     if sort_fields is None:
-        query_results.apply_scoring()
+        if term:
+            query_results.apply_scoring()
+        else:
+            query_results.apply_sorting({'score': {'order': 'desc'}}, 0)
     else:
         query_results.apply_sorting(sort_fields, score_treshold)
 
