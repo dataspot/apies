@@ -86,7 +86,7 @@ def search(es_client,
            offset,
            filters,
            dont_highlight,
-           score_treshold=0.5,
+           score_threshold=0.5,
            sort_fields=None):
     types = _validate_types(text_fields, types)
 
@@ -104,7 +104,7 @@ def search(es_client,
         else:
             query_results.apply_sorting({'score': {'order': 'desc'}}, 0)
     else:
-        query_results.apply_sorting(sort_fields, score_treshold)
+        query_results.apply_sorting(sort_fields, score_threshold)
 
     # Apply pagination
     query_results = query_results.apply_pagination(size, offset)

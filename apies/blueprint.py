@@ -45,8 +45,8 @@ def dynamic_search_handler(types):
         types_formatted = str(types).split(',')
         filters = request.values.get('filter')
         search_term = request.values.get('q')
-        from_date = request.values.get('from_date', '1900-01-01')
-        to_date = request.values.get('to_date', '2100-01-01')
+        from_date = request.values.get('from_date')
+        to_date = request.values.get('to_date')
         size = request.values.get('size', 10)
         offset = request.values.get('offset', 0)
         dont_highlight = request.values.get('dont_highlight') or dont_highlight
@@ -59,7 +59,7 @@ def dynamic_search_handler(types):
                         types_formatted, search_term,
                         from_date, to_date,
                         size, offset, filters, dont_highlight,
-                        score_treshold=0.5, sort_fields=order)
+                        score_threshold=0.5, sort_fields=order)
     except Exception as e:
         logging.exception('Error searching %s for types: %s ' % (search_term, str(types)))
         result = {'error': str(e)}
