@@ -75,9 +75,16 @@ def simple_search_handler(types, search_term):
     try:
         types_formatted = str(types).split(',')
         filters = request.values.get('filter')
+        from_date = request.values.get('from_date')
+        to_date = request.values.get('to_date')
+        size = request.values.get('size', 100)
+        offset = request.values.get('offset', 0)
+        dont_highlight = request.values.get('dont_highlight') or dont_highlight
+        order = request.values.get('order')
         result = search(es_client, index_name, text_fields,
                         types_formatted, search_term,
-                        None, None, 100, 0, filters, dont_highlight)
+                        from_date, to_date, size, offset, filters, dont_highlight,
+                        score_threshold=0.5, sort_fields=order)
     except Exception as e:
         logging.exception('Error searching %s for tables: %s ' % (search_term, str(types)))
         result = {'error': str(e)}
