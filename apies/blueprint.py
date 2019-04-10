@@ -54,7 +54,7 @@ def dynamic_search_handler(types):
         if order is not None:
             if order != '_score':
                 order = {order: 'desc'}
-            order = [order]
+            # order = [order]
         result = search(es_client, index_name, text_fields,
                         types_formatted, search_term,
                         from_date, to_date,
