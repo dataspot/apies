@@ -8,6 +8,9 @@ class Query():
         self.q = {}
         self.types = types
 
+    def __str__(self):
+        return demjson.encode(self.q)
+
     def run(self, es_client, index_name):
         return es_client.search(
                     index=index_name,
@@ -77,49 +80,68 @@ class Query():
         )
         return self
 
+    def parse_filter_op(self, k, v):
+        must = True
+        parts = k.split('__')
+        op = None
+
+        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not'):
+            op = parts[-1]
+            k = '__'.join(parts[:-1])
+
+        if op == 'not':
+            must = False
+            op = None
+
+        if op is not None:
+            ret = dict(
+                range={
+                    k: {
+                        op: v
+                    }
+                }
+            )
+        else:
+            if isinstance(v, list):
+                ret = dict(
+                    terms={
+                        k: v
+                    }
+                )
+            else:
+                ret = dict(
+                    term={
+                        k: v
+                    }
+                )
+        return ret, must
+
     def apply_filters(self, filters):
         if not filters:
             return self
 
         if isinstance(filters, str):
-            if not filters.startswith('{'):
+            if filters.startswith('[') and filters.endswith(']'):
+                pass
+            elif not filters.startswith('{'):
                 filters = '{' + filters + '}'
             filters = demjson.decode(filters)
 
-        for k, v in filters.items():
-            must = self.must()
-            parts = k.split('__')
-            op = None
+        if isinstance(filters, dict):
+            filters = [filters]
 
-            if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not'):
-                op = parts[-1]
-                k = '__'.join(parts[:-1])
-
-            if op == 'not':
-                must = self.must_not()
-                op = None
-
-            if op is not None:
-                must.append(dict(
-                    range={
-                        k: {
-                            op: v
-                        }
-                    }
-                ))
-            else:
-                if isinstance(v, list):
-                    must.append(dict(
-                        terms={
-                            k: v
-                        }
-                    ))
-                else:
-                    must.append(dict(
-                        term={
-                            k: v
-                        }
-                    ))
+        should_clauses = []
+        if isinstance(filters, list):
+            for i in filters:
+                bool_clause = {}
+                for k, v in i.items():
+                    clause, positive = self.parse_filter_op(k, v)
+                    if positive:
+                        bool_clause.setdefault('must', []).append(clause)
+                    else:
+                        bool_clause.setdefault('must_not', []).append(clause)
+                should_clauses.append(dict(bool=bool_clause))
+        self.must().append(dict(bool=dict(should=should_clauses)))
         return self
 
     def apply_time_range(self, from_date, to_date):
