@@ -35,7 +35,7 @@ LINT_REQUIRES = [
 TESTS_REQUIRE = [
     'tox',
 ]
-README = read('README.md')
+README = read('README.rst')
 VERSION = read(PACKAGE, 'VERSION')
 PACKAGES = find_packages(exclude=['examples', 'tests', '.tox'])
 

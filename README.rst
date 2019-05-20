@@ -1,20 +1,27 @@
-# apies
+apies
+=====
 
-[![Travis](https://img.shields.io/travis/OpenBudget/apies/master.svg)](https://travis-ci.org/datahq/apies)
-[![Coveralls](http://img.shields.io/coveralls/OpenBudget/apies.svg?branch=master)](https://coveralls.io/r/OpenBudget/apies?branch=master)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/apies.svg)
+.. image:: https://travis-ci.org/OpenBudget/apies.svg?branch=master
+    :target: https://travis-ci.org/OpenBudget/apies
+
+.. image:: http://img.shields.io/coveralls/OpenBudget/apies.svg?branch=master
+    :target: https://coveralls.io/r/OpenBudget/apies?branch=master
 
 apies is a flask blueprint providing an API for accessing and searching an ElasticSearch index created from source datapackages.
 
-## endpoints
+endpoints
+---------
 
 TBD
 
-## configuration
+configuration
+-------------
 
 Flask configuration for this blueprint:
 
-```python
+
+.. highlight:: python
+
     from apies import apies_blueprint
     import elasticsearch
 
@@ -26,5 +33,3 @@ Flask configuration for this blueprint:
                         dont_highlight=['fields', 'not.to', 'highlight']),
         url_prefix='/search/'
     )
-
-```
