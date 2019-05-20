@@ -20,7 +20,7 @@ configuration
 Flask configuration for this blueprint:
 
 
-.. highlight:: python
+.. code-block:: python
 
     from apies import apies_blueprint
     import elasticsearch
