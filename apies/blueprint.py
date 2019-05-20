@@ -117,8 +117,8 @@ def simple_count_handler():
     try:
         config = demjson.decode(config)
         search_term = request.values.get('q')
-        from_date = request.values.get('from_date', '1900-01-01')
-        to_date = request.values.get('to_date', '2100-01-01')
+        from_date = request.values.get('from_date')
+        to_date = request.values.get('to_date')
         result = count(es_client, index_name, text_fields,
                        search_term,
                        from_date, to_date, config)
