@@ -22,6 +22,8 @@ blueprint = apies_blueprint(
     dont_highlight={
         'Salary Frequency',
     },
+    multi_match_type='most_fields',
+    multi_match_operator='or'
 )
 app.register_blueprint(blueprint, url_prefix='/search/')
 

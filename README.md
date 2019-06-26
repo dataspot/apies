@@ -35,12 +35,14 @@ Flask configuration for this blueprint:
 You can start a local development server by following these steps:
 
 1. Install Dependencies:
+    
     a. Install Docker locally
+    
     b. Install Python dependencies:
 
-       ```bash
-       $ pip install dataflows datapackage-pipelines-elasticsearch
-       ```
+    ```bash
+    $ pip install dataflows datapackage-pipelines-elasticsearch
+    ```
 2. Go to the `sample/` directory
 3. Start ElasticSearch locally:
    ```bash

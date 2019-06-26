@@ -1,1 +1,1 @@
-from .blueprint import make_blueprint as apies_blueprint
+from .blueprint import APIESBlueprint as apies_blueprint

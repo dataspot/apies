@@ -32,15 +32,16 @@ class Query():
                      .setdefault('bool', {})\
                      .setdefault('must_not', [])
 
-    def apply_term(self, term, text_fields):
+    def apply_term(self, term, text_fields,
+                   multi_match_type='most_fields', multi_match_operator='and'):
         search_fields = [text_fields[type_name] for type_name in self.types]
         search_fields = list(set().union(*search_fields))
         self.must().append(dict(
             multi_match=dict(
                 query=term,
                 fields=search_fields,
-                type='most_fields',
-                operator='and'
+                type=multi_match_type,
+                operator=multi_match_operator
             )
         ))
         return self
