@@ -52,6 +52,7 @@ setup(
     },
     zip_safe=False,
     long_description=README,
+    long_description_content_type='text/markdown',
     description='A flask blueprint providing an API for accessing and searching an ElasticSearch index created from source datapackages',
     author='Adam Kariv',
     author_email='adam.kariv@gmail.com',

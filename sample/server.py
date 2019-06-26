@@ -7,37 +7,20 @@ from flask_cors import CORS
 
 from apies import apies_blueprint
 
-DATAPACKAGE_BASE = 'http://next.obudget.org/datapackages/budgetkey/{}/datapackage.json'
+DATAPACKAGE = 'data/datapackage.json'
 ES_HOST = os.environ.get('ES_HOST', 'localhost')
 ES_PORT = int(os.environ.get('ES_PORT', '9200'))
-INDEX_NAME = os.environ.get('INDEX_NAME', 'budgetkey')
+INDEX_NAME = 'jobs'
 
 app = Flask(__name__)
 CORS(app)
-blueprint = apies_blueprint(app,
-    [
-        DATAPACKAGE_BASE.format(doctype)
-        for doctype in [
-            'people',
-            'tenders',
-            'entities',
-            'contract-spending',
-            'national-budget-changes',
-            'supports',
-            'reports',
-            'budget',
-            'gov_decisions',
-        ]
-    ],
+blueprint = apies_blueprint(
+    app,
+    [DATAPACKAGE],
     elasticsearch.Elasticsearch([dict(host=ES_HOST, port=ES_PORT)], timeout=60),
-    'budgetkey',
+    'jobs',
     dont_highlight={
-        'kind',
-        'kind_he',
-        'budget_code',
-        'entity_kind',
-        'entity_id',
-        'code',
+        'Salary Frequency',
     },
 )
 app.register_blueprint(blueprint, url_prefix='/search/')
