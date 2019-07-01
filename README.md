@@ -42,6 +42,7 @@ You can start a local development server by following these steps:
 
     ```bash
     $ pip install dataflows datapackage-pipelines-elasticsearch
+    $ pip install -e .
     ```
 2. Go to the `sample/` directory
 3. Start ElasticSearch locally:
