@@ -1,4 +1,4 @@
-from apies.controllers import _merge_highlight_into_source
+from apies.controllers import Controllers
 
 DONT_HIGHLIGHT = {
     'kind',
@@ -11,6 +11,8 @@ DONT_HIGHLIGHT = {
 
 
 def test_highlight_merge():
+
+    c = Controllers()
 
     source = {
         'a': 'a simple string',
@@ -40,7 +42,7 @@ def test_highlight_merge():
         'dd': ['<em>simple</em>'],
     }
 
-    source = _merge_highlight_into_source(source, highlights, DONT_HIGHLIGHT)
+    source = c._merge_highlight_into_source(source, highlights, DONT_HIGHLIGHT)
 
     assert source == {
         'a': 'a <em>simple</em> string',
