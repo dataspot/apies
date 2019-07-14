@@ -86,7 +86,7 @@ class Query():
         parts = k.split('__')
         op = None
 
-        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not'):
+        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like'):
             op = parts[-1]
             k = '__'.join(parts[:-1])
 
@@ -95,13 +95,20 @@ class Query():
             op = None
 
         if op is not None:
-            ret = dict(
-                range={
-                    k: {
-                        op: v
+            if op == 'like':
+                ret = dict(
+                    match={
+                        k: v
                     }
-                }
-            )
+                )
+            else:
+                ret = dict(
+                    range={
+                        k: {
+                            op: v
+                        }
+                    }
+                )
         else:
             if isinstance(v, list):
                 ret = dict(
