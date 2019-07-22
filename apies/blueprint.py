@@ -9,11 +9,16 @@ import demjson
 from .controllers import Controllers
 from .sources import extract_text_fields
 
-DEFAULT_RULES = dict([
-    # es:title, es:keyword -> suffixes (by default: [''])
-    ((True,     False),       ['^3', '.hebrew^10']),
-    ((True,     True),        ['^10']),
-])
+
+def default_rules(field):
+    if field.get('es:title'):
+        if field.get('es:keyword'):
+            return ['^10']
+        else:
+            return ['^3', '.hebrew^10']
+    elif field.get('es:boost'):
+        return ['^10']
+    return ['']
 
 
 class APIESBlueprint(Blueprint):
@@ -24,7 +29,7 @@ class APIESBlueprint(Blueprint):
                  index_name,
                  document_doctype='document',
                  dont_highlight=[],
-                 text_field_rules=DEFAULT_RULES,
+                 text_field_rules=default_rules,
                  multi_match_type='most_fields',
                  multi_match_operator='and'):
         super().__init__('apies', 'apies')
