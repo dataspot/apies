@@ -68,6 +68,8 @@ class Query():
                 sort = {sort_fields: 'desc'}
             else:
                 sort = {sort_fields: 'asc'}
+        else:
+            sort = sort_fields
 
         # Then sort by the sort fields, for example - {'__last_modified_at': {'order': 'desc'}}
         self.q.setdefault('sort', sort)
