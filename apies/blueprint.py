@@ -127,10 +127,6 @@ class APIESBlueprint(Blueprint):
             offset = request.values.get('offset', 0)
             dont_highlight = request.values.get('dont_highlight') or dont_highlight
             order = request.values.get('order')
-            if order is not None:
-                if order != '_score':
-                    order = {order: 'desc'}
-                # order = [order]
             result = self.controllers.search(
                 es_client, index_name, text_fields,
                 types_formatted, search_term,

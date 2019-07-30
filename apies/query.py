@@ -62,9 +62,15 @@ class Query():
         # Apply the scoring threshold - since we are no longer sorting by score, it is important to use a score
         # threshold so as not to get irrelevant results
         self.q.setdefault('min_score', score_threshold)
+        if isinstance(sort_fields, str):
+            if sort_fields[0] == '-':
+                sort_fields = sort_fields[1:]
+                sort = {sort_fields: 'desc'}
+            else:
+                sort = {sort_fields: 'asc'}
 
         # Then sort by the sort fields, for example - {'__last_modified_at': {'order': 'desc'}}
-        self.q.setdefault('sort', sort_fields)
+        self.q.setdefault('sort', sort)
 
         return self
 
