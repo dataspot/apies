@@ -132,7 +132,7 @@ class APIESBlueprint(Blueprint):
                 types_formatted, search_term,
                 from_date, to_date,
                 size, offset, filters, dont_highlight,
-                score_threshold=0.5, sort_fields=order
+                score_threshold=0, sort_fields=order
             )
         except Exception as e:
             logging.exception('Error searching %s for types: %s ' % (search_term, str(types)))
@@ -157,8 +157,9 @@ class APIESBlueprint(Blueprint):
             result = self.controllers.search(
                 es_client, index_name, text_fields,
                 types_formatted, search_term,
-                from_date, to_date, size, offset, filters, dont_highlight,
-                score_threshold=0.5, sort_fields=order
+                from_date, to_date,
+                size, offset, filters, dont_highlight,
+                score_threshold=0, sort_fields=order
             )
         except Exception as e:
             logging.exception('Error searching %s for tables: %s ' % (search_term, str(types)))

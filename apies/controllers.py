@@ -19,6 +19,7 @@ class Controllers():
         self.multi_match_type = multi_match_type
         self.multi_match_operator = multi_match_operator
 
+    # REPLACEMENTS
     def _prepare_replacements(self, highlighted):
         return [
             (h.replace('<em>', '').replace('</em>', ''), h)
@@ -88,7 +89,7 @@ class Controllers():
                offset,
                filters,
                dont_highlight,
-               score_threshold=0.5,
+               score_threshold=0,
                sort_fields=None):
         types = self._validate_types(text_fields, types)
 

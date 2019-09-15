@@ -65,9 +65,9 @@ class Query():
         if isinstance(sort_fields, str):
             if sort_fields[0] == '-':
                 sort_fields = sort_fields[1:]
-                sort = {sort_fields: 'desc'}
+                sort = {sort_fields: {'order': 'desc'}}
             else:
-                sort = {sort_fields: 'asc'}
+                sort = {sort_fields: {'order': 'asc'}}
         else:
             sort = sort_fields
 
