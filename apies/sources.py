@@ -18,8 +18,8 @@ def _process_field(field: Field, rules, ret, prefix):
     elif schema_type == 'string':
         if field['name'] not in ('doc_id',):
             search_field = prefix + field['name']
-            for suffix in rules(field):
-                ret.append(search_field + suffix)
+            for kind, suffix in rules(field):
+                ret.append((kind, search_field + suffix))
 
 
 def _process_schema(schema, rules, ret=[], prefix=''):

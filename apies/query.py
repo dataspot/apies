@@ -1,4 +1,7 @@
 import demjson
+import json
+
+from .logger import logger
 
 
 # ### QUERY DSL HANDLING
@@ -11,7 +14,9 @@ class Query():
     def __str__(self):
         return demjson.encode(self.q)
 
-    def run(self, es_client, index_name):
+    def run(self, es_client, index_name, debug):
+        if debug:
+            logger.debug('QUERY:\n%s', json.dumps(self.q, indent=2, ensure_ascii=False))
         return es_client.search(
                     index=index_name,
                     doc_type=','.join(self.types),
@@ -36,14 +41,56 @@ class Query():
                    multi_match_type='most_fields', multi_match_operator='and'):
         search_fields = [text_fields[type_name] for type_name in self.types]
         search_fields = list(set().union(*search_fields))
-        self.must().append(dict(
+        search_fields = dict(
+            (k, [x[1] for x in search_fields if x[0] == k])
+            for k in ('exact', 'inexact', 'natural')
+        )
+        matchers = []
+
+        # Multimatch
+        matchers.append(dict(
             multi_match=dict(
                 query=term,
-                fields=search_fields,
+                fields=[f for f in search_fields['inexact']],
                 type=multi_match_type,
                 operator=multi_match_operator
             )
         ))
+
+        # Common Terms
+        for field in search_fields['natural']:
+            if '^' in field:
+                name, boost = field.split('^')
+            else:
+                name, boost = field, 1.0
+            matchers.append(dict(
+                common={
+                    name: dict(
+                        query=term,
+                        boost=float(boost),
+                        cutoff_frequency=0.001,
+                    )
+                }
+            ))
+        # Tuples
+        parts = term.split()
+        parts = [term] + parts + [' '.join(z) for z in zip(parts[:-1], parts[1:])]
+        for field in search_fields['exact']:
+            matchers.append(dict(
+                terms={
+                    field: tuple(set(parts))
+                }
+            ))
+
+        # Apply boosters
+        if len(matchers) > 0:
+            self.must().append(dict(
+                bool=dict(
+                    should=matchers,
+                    minimum_should_match=1
+                )
+            ))
+
         return self
 
     def apply_scoring(self):

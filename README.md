@@ -8,7 +8,11 @@ apies is a flask blueprint providing an API for accessing and searching an Elast
 
 ## endpoints
 
-TBD
+### `/get`
+
+### `/search/count`
+
+### `/search/<doctypes>`
 
 ## configuration
 
@@ -25,7 +29,10 @@ Flask configuration for this blueprint:
                         elasticsearch.Elasticsearch(...), 
                         'index-to-search-in', 
                         document_doctype='document',
-                        dont_highlight=['fields', 'not.to', 'highlight']),
+                        dont_highlight=['fields', 'not.to', 'highlight'],
+                        text_field_rules=lambda schema_field: [], # list of tuples: ('exact'/'inexact'/'natural', <field-name>)
+                        multi_match_type='most_fields',
+                        multi_match_operator='and'),
         url_prefix='/search/'
     )
 ```

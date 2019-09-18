@@ -12,7 +12,7 @@ DONT_HIGHLIGHT = {
 
 def test_highlight_merge():
 
-    c = Controllers()
+    c = Controllers('index', [])
 
     source = {
         'a': 'a simple string',

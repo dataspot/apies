@@ -15,9 +15,22 @@ from .query import Query
 
 class Controllers():
 
-    def __init__(self, multi_match_type='most_fields', multi_match_operator='and'):
+    def __init__(self,
+                 index_name,
+                 text_fields,
+                 document_doctype='document',
+                 multi_match_type='most_fields',
+                 multi_match_operator='and',
+                 dont_highlight=tuple(),
+                 debug_queries=False):
+
+        self.index_name = index_name
+        self.text_fields = text_fields
+        self.document_doctype = document_doctype
         self.multi_match_type = multi_match_type
         self.multi_match_operator = multi_match_operator
+        self.dont_highlight = dont_highlight
+        self.debug_queries = debug_queries
 
     # REPLACEMENTS
     def _prepare_replacements(self, highlighted):
@@ -79,8 +92,6 @@ class Controllers():
     # Main API
     def search(self,
                es_client,
-               index_name,
-               text_fields,
                types,
                term,
                from_date,
@@ -88,15 +99,14 @@ class Controllers():
                size,
                offset,
                filters,
-               dont_highlight,
                score_threshold=0,
                sort_fields=None):
-        types = self._validate_types(text_fields, types)
+        types = self._validate_types(self.text_fields, types)
 
         query_results = Query(types)
         if term:
             query_results = query_results.apply_term(
-                term, text_fields,
+                term, self.text_fields,
                 multi_match_type=self.multi_match_type,
                 multi_match_operator=self.multi_match_operator)
 
@@ -116,7 +126,7 @@ class Controllers():
         query_results = query_results.apply_pagination(size, offset)
 
         # Apply highlighting
-        if term and dont_highlight != '*' and '*' not in dont_highlight:
+        if term and self.dont_highlight != '*' and '*' not in self.dont_highlight:
             highlighted = True
             query_results = query_results.apply_highlighting()
         else:
@@ -124,7 +134,7 @@ class Controllers():
 
         # Apply the time range
         query_results = query_results.apply_time_range(from_date, to_date)\
-            .run(es_client, index_name)
+            .run(es_client, self.index_name, self.debug_queries)
 
         default_sort_score = (0,)
         if highlighted:
@@ -133,7 +143,7 @@ class Controllers():
                     source=self._merge_highlight_into_source(
                         hit['_source'],
                         hit['highlight'],
-                        dont_highlight
+                        self.dont_highlight
                     ),
                     type=hit['_type'],
                     score=hit['_score'] or hit.get('sort', default_sort_score)[0]
@@ -159,18 +169,17 @@ class Controllers():
             search_results=search_results
         )
 
-    def count(self, es_client, index_name, text_fields,
-              term, from_date, to_date, config):
+    def count(self, es_client, term, from_date, to_date, config):
         counts = {}
         for item in config:
             doc_types = item['doc_types']
-            doc_types = self._validate_types(text_fields, doc_types)
+            doc_types = self._validate_types(self.text_fields, doc_types)
             filters = item['filters']
             id = item['id']
             query_results = Query(doc_types)
             if term:
                 query_results = query_results.apply_term(
-                    term, text_fields,
+                    term, self.text_fields,
                     multi_match_type=self.multi_match_type,
                     multi_match_operator=self.multi_match_operator
                 )
@@ -178,7 +187,7 @@ class Controllers():
                 .apply_filters(filters)\
                 .apply_pagination(0, 0)\
                 .apply_time_range(from_date, to_date)\
-                .run(es_client, index_name)
+                .run(es_client, self.index_name, self.debug_queries)
             counts[id] = dict(
                 total_overall=query_results['hits']['total']
             )
@@ -200,7 +209,7 @@ class Controllers():
             .apply_pagination(0, 0)\
             .apply_time_range(from_date, to_date)\
             .apply_month_aggregates()\
-            .run(es_client, index_name)
+            .run(es_client, index_name, self.debug_queries)
 
         timeline = query_results.get('aggregations', {}).get('timeline', {}).get('buckets', [])
         timeline = ((b['key'], b['doc_count'])
