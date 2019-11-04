@@ -25,7 +25,7 @@ blueprint = apies_blueprint(
     multi_match_type='most_fields',
     multi_match_operator='or',
     debug_queries=True,
-    text_field_rules=lambda x: ['^2'] if x['name'] in ('Residency Requirement', 'Job Description', 'Business Title') else ['']
+    text_field_rules=lambda x: [('inexact', '^2')] if x['name'] in ('Residency Requirement', 'Job Description', 'Business Title') else [('inexact', '')]
 )
 app.register_blueprint(blueprint, url_prefix='/api/')
 
