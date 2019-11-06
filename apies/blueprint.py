@@ -118,9 +118,6 @@ class APIESBlueprint(Blueprint):
 
         # Get values from the config
         es_client = current_app.config['ES_CLIENT']
-        index_name = current_app.config['INDEX_NAME']
-        text_fields = current_app.config['TEXT_FIELDS']
-        dont_highlight = current_app.config['DONT_HIGHLIGHT']
 
         # Get parameters from the query string
         try:
@@ -131,13 +128,10 @@ class APIESBlueprint(Blueprint):
             size = request.values.get('size', 10)
             offset = request.values.get('offset', 0)
             filters = request.values.get('filter')
-            dont_highlight = request.values.get('dont_highlight') or dont_highlight
             order = request.values.get('order')
 
             # Get the query results
             result = self.controllers.search(es_client,
-                                             index_name,
-                                             text_fields,
                                              types_formatted,
                                              search_term,
                                              from_date,
@@ -145,10 +139,8 @@ class APIESBlueprint(Blueprint):
                                              size,
                                              offset,
                                              filters,
-                                             dont_highlight,
                                              score_threshold=0,
-                                             sort_fields=order
-                                             )
+                                             sort_fields=order)
 
         except Exception as e:
             logging.exception('Error searching %s for types: %s ' % (search_term, str(types)))

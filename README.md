@@ -42,12 +42,12 @@ original data, a column map can be send, for example:
 
 For example, get a csv file with column mapping:
 ```
-http://localhost:5000/search/download/jobs?q=engineering&size=2&file_format=csv&file_name=my_results&column_mapping={%22mispar%22:%22Job%20ID%22}
+http://localhost:5000/api/download/jobs?q=engineering&size=2&file_format=csv&file_name=my_results&column_mapping={%22mispar%22:%22Job%20ID%22}
 ```
 
 Or get an xslx file without column mapping:
 ```
-http://localhost:5000/search/download/jobs?q=engineering&size=2&file_format=xlsx&file_name=my_results
+http://localhost:5000/api/download/jobs?q=engineering&size=2&file_format=xlsx&file_name=my_results
 ```
 
 ## configuration
