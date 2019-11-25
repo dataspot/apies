@@ -10,14 +10,20 @@ from .logger import logger, logging
 
 
 def default_rules(field):
-    if field.get('es:title'):
+    if field.get('es:title') or field.get('es:hebrew'):
         if field.get('es:keyword'):
-            return ['^10']
+            return [('exact', '^10')]
         else:
-            return ['^3', '.hebrew^10']
+            return [('inexact', '^3'), ('natural', '.hebrew^10')]
     elif field.get('es:boost'):
-        return ['^10']
-    return ['']
+        if field.get('es:keyword'):
+            return [('exact', '^10')]
+        else:
+            return [('inexact', '^10')]
+    elif field.get('es:keyword'):
+        return [('exact', '')]
+    else:
+        return [('inexact', '')]
 
 
 class APIESBlueprint(Blueprint):
