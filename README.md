@@ -48,7 +48,7 @@ You can start a local development server by following these steps:
     b. Install Python dependencies:
 
     ```bash
-    $ pip install dataflows datapackage-pipelines-elasticsearch
+    $ pip install dataflows dataflows-elasticsearch
     $ pip install -e .
     ```
 2. Go to the `sample/` directory
@@ -61,35 +61,40 @@ You can start a local development server by following these steps:
    You can test it yourself by running:
    ```bash
    $ curl -s http://localhost:9200
-    {
-        "name" : "DTsRT6T",
-        "cluster_name" : "elasticsearch",
-        "cluster_uuid" : "QnLVHaOYTkmJZzkCG3Hong",
+        {
+        "name" : "99cd2db44924",
+        "cluster_name" : "docker-cluster",
+        "cluster_uuid" : "nF9fuwRyRYSzyQrcH9RCnA",
         "version" : {
-            "number" : "5.5.2",
-            "build_hash" : "b2f0c09",
-            "build_date" : "2017-08-14T12:33:14.154Z",
+            "number" : "7.4.2",
+            "build_flavor" : "default",
+            "build_type" : "docker",
+            "build_hash" : "2f90bbf7b93631e52bafb59b3b049cb44ec25e96",
+            "build_date" : "2019-10-28T20:40:44.881551Z",
             "build_snapshot" : false,
-            "lucene_version" : "6.6.0"
+            "lucene_version" : "8.2.0",
+            "minimum_wire_compatibility_version" : "6.8.0",
+            "minimum_index_compatibility_version" : "6.0.0-beta1"
         },
         "tagline" : "You Know, for Search"
-    }
+        }
    ```
 4. Load data into the database
    ```bash
-   $ python load_fixtures.py
+   $ DATAFLOWS_ELASTICSEARCH=localhost:9200 python load_fixtures.py
    ```
    You can test that data was loaded:
    ```bash
-   $ curl -s http://localhost:9200/jobs/_count?pretty
-    {
-        "count" : 3516,
+   $ curl -s http://localhost:9200/jobs-job/_count?pretty
+        {
+        "count" : 1757,
         "_shards" : {
-                "total" : 5,
-                "successful" : 5,
-                "failed" : 0
+            "total" : 1,
+            "successful" : 1,
+            "skipped" : 0,
+            "failed" : 0
         }
-    }
+        }
    ```
 5. Start the sample server
    ```bash

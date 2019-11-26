@@ -1,6 +1,7 @@
 from datapackage_pipelines_elasticsearch.processors.dump.to_index import ESDumper
 from tableschema_elasticsearch.mappers import MappingGenerator
 import dataflows as DF
+from dataflows_elasticsearch import dump_to_es
 
 
 class DumpToElasticSearch(ESDumper):
@@ -38,26 +39,24 @@ if __name__ == '__main__':
         DF.add_field('doc_id', 'string', default=lambda row: 'job/{Job ID}'.format(**row)),
         DF.add_field('score', 'integer', default=1),
         DF.set_primary_key(['doc_id']),
-        DumpToElasticSearch({
-            'jobs': [
+        dump_to_es(indexes={
+            'jobs-job': [
                 {
                     'resource-name': 'jobs',
-                    'doc-type': 'jobs'
                 }
             ]
-        })(),
+        }),
         DF.dump_to_path('data'),
         DF.add_field('value', 'object',
                     default=lambda row: dict((k, v) for k, v in row.items() if k not in ('doc_id', 'score')),
                     **{'es:index': False}),
         DF.select_fields(['doc_id', 'value']),
-        DumpToElasticSearch({
-            'jobs': [
+        dump_to_es(indexes={
+            'jobs-document': [
                 {
                     'resource-name': 'jobs',
-                    'doc-type': 'document'
                 }
             ]
-        })(),
+        }),
         DF.printer(fields=['doc_id'])
     ).process()

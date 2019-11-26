@@ -16,17 +16,17 @@ from .query import Query
 class Controllers():
 
     def __init__(self,
-                 index_name,
+                 search_indexes,
                  text_fields,
-                 document_doctype='document',
+                 document_index,
                  multi_match_type='most_fields',
                  multi_match_operator='and',
                  dont_highlight=tuple(),
                  debug_queries=False):
 
-        self.index_name = index_name
         self.text_fields = text_fields
-        self.document_doctype = document_doctype
+        self.search_indexes = search_indexes
+        self.document_index = document_index
         self.multi_match_type = multi_match_type
         self.multi_match_operator = multi_match_operator
         self.dont_highlight = dont_highlight
@@ -80,14 +80,14 @@ class Controllers():
         return source
 
     # UTILS
-    def _validate_types(self, text_fields, types):
+    def _validate_types(self, types):
         if 'all' in types:
-            types = text_fields.keys()
+            types = self.search_indexes
 
         for type_name in types:
-            if type_name not in text_fields:
+            if type_name not in self.search_indexes:
                 raise ValueError('not a real type %s' % type_name)
-        return types
+        return dict((k, v) for k, v in self.search_indexes.items() if k in types)
 
     # Main API
     def search(self,
@@ -101,9 +101,9 @@ class Controllers():
                filters,
                score_threshold=0,
                sort_fields=None):
-        types = self._validate_types(self.text_fields, types)
+        search_indexes = self._validate_types(types)
 
-        query_results = Query(types)
+        query_results = Query(search_indexes)
         if term:
             query_results = query_results.apply_term(
                 term, self.text_fields,
@@ -133,8 +133,20 @@ class Controllers():
             highlighted = False
 
         # Apply the time range
-        query_results = query_results.apply_time_range(from_date, to_date)\
-            .run(es_client, self.index_name, self.debug_queries)
+        query_results = query_results.apply_time_range(from_date, to_date)
+
+        # Execute the query
+        query_results = query_results.run(es_client, self.debug_queries)
+        query_results = query_results['responses']
+        hits = [
+            hit
+            for result in query_results
+            for hit in result['hits']['hits']
+        ]
+        total_overall = sum(
+            results['hits']['total']['value']
+            for results in query_results
+        )
 
         default_sort_score = (0,)
         if highlighted:
@@ -148,7 +160,7 @@ class Controllers():
                     type=hit['_type'],
                     score=hit['_score'] or hit.get('sort', default_sort_score)[0]
                 )
-                for hit in query_results['hits']['hits']
+                for hit in hits
             ]
         else:
             search_results = [
@@ -157,13 +169,13 @@ class Controllers():
                     type=hit['_type'],
                     score=hit['_score'] or hit.get('sort', default_sort_score)[0]
                 )
-                for hit in query_results['hits']['hits']
+                for hit in hits
             ]
 
         return dict(
             search_counts=dict(
                 _current=dict(
-                    total_overall=query_results['hits']['total']
+                    total_overall=total_overall
                 )
             ),
             search_results=search_results
@@ -173,10 +185,10 @@ class Controllers():
         counts = {}
         for item in config:
             doc_types = item['doc_types']
-            doc_types = self._validate_types(self.text_fields, doc_types)
+            search_indexes = self._validate_types(doc_types)
             filters = item['filters']
             id = item['id']
-            query_results = Query(doc_types)
+            query_results = Query(search_indexes)
             if term:
                 query_results = query_results.apply_term(
                     term, self.text_fields,
@@ -187,9 +199,12 @@ class Controllers():
                 .apply_filters(filters)\
                 .apply_pagination(0, 0)\
                 .apply_time_range(from_date, to_date)\
-                .run(es_client, self.index_name, self.debug_queries)
+                .run(es_client, self.debug_queries)
             counts[id] = dict(
-                total_overall=query_results['hits']['total']
+                total_overall=sum(
+                    results['hits']['total']['value']
+                    for results in query_results['responses']
+                )
             )
         return dict(
             search_counts=counts
@@ -197,9 +212,9 @@ class Controllers():
 
     def timeline(self, es_client, index_name, text_fields,
                  types, term, from_date, to_date, filters):
-        types = self._validate_types(text_fields, types)
+        search_indexes = self._validate_types(types)
 
-        query_results = Query(types)\
+        query_results = Query(search_indexes)\
             .apply_term(
                 term, text_fields,
                 multi_match_type=self.multi_match_type,
@@ -209,9 +224,10 @@ class Controllers():
             .apply_pagination(0, 0)\
             .apply_time_range(from_date, to_date)\
             .apply_month_aggregates()\
-            .run(es_client, index_name, self.debug_queries)
+            .run(es_client, self.debug_queries)
 
-        timeline = query_results.get('aggregations', {}).get('timeline', {}).get('buckets', [])
+        # TODO: combine all responses
+        timeline = query_results['responses'][0].get('aggregations', {}).get('timeline', {}).get('buckets', [])
         timeline = ((b['key'], b['doc_count'])
                     for b in timeline
                     if len(b['key']) == 7)
@@ -226,7 +242,7 @@ class Controllers():
 
     def get_document(self, es_client, doc_id):
         try:
-            result = es_client.get(self.index_name, doc_id, doc_type=self.document_doctype)
+            result = es_client.get(self.document_index, doc_id)
             return result.get('_source')
         except elasticsearch.exceptions.NotFoundError:
             return None
