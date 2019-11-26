@@ -27,8 +27,8 @@ Flask configuration for this blueprint:
     app.register_blueprint(
         apies_blueprint(['path/to/datapackage.json', Package(), ...],
                         elasticsearch.Elasticsearch(...), 
-                        'index-to-search-in', 
-                        document_doctype='document',
+                        {'doc-type-1': 'index-for-doc-type-1', ...}, 
+                        'index-for-documents',
                         dont_highlight=['fields', 'not.to', 'highlight'],
                         text_field_rules=lambda schema_field: [], # list of tuples: ('exact'/'inexact'/'natural', <field-name>)
                         multi_match_type='most_fields',
