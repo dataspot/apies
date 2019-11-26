@@ -103,46 +103,46 @@ class Controllers():
                sort_fields=None):
         search_indexes = self._validate_types(types)
 
-        query_results = Query(search_indexes)
+        query = Query(search_indexes)
         if term:
-            query_results = query_results.apply_term(
+            query = query.apply_term(
                 term, self.text_fields,
                 multi_match_type=self.multi_match_type,
                 multi_match_operator=self.multi_match_operator)
 
         # Apply the filters
-        query_results = query_results.apply_filters(filters)
+        query = query.apply_filters(filters)
 
         # Apply sorting - if there are fields to sort by, apply the scoring as the sorting
         if sort_fields is None:
             if term:
-                query_results.apply_scoring()
+                query.apply_scoring()
             else:
-                query_results.apply_sorting({'score': {'order': 'desc'}}, 0)
+                query.apply_sorting({'score': {'order': 'desc'}}, 0)
         else:
-            query_results.apply_sorting(sort_fields, score_threshold)
+            query.apply_sorting(sort_fields, score_threshold)
 
         # Apply pagination
-        query_results = query_results.apply_pagination(size, offset)
+        query = query.apply_pagination(size, offset)
 
         # Apply highlighting
         if term and self.dont_highlight != '*' and '*' not in self.dont_highlight:
             highlighted = True
-            query_results = query_results.apply_highlighting()
+            query = query.apply_highlighting()
         else:
             highlighted = False
 
         # Apply the time range
-        query_results = query_results.apply_time_range(from_date, to_date)
+        query = query.apply_time_range(from_date, to_date)
 
         # Execute the query
-        query_results = query_results.run(es_client, self.debug_queries)
+        query_results = query.run(es_client, self.debug_queries)
         query_results = query_results['responses']
-        hits = [
-            hit
-            for result in query_results
-            for hit in result['hits']['hits']
-        ]
+        hits = []
+        for _type, result in zip(query.types, query_results):
+            for hit in result['hits']['hits']:
+                hit['_type'] = _type
+                hits.append(hit)
         total_overall = sum(
             results['hits']['total']['value']
             for results in query_results
