@@ -18,7 +18,8 @@ blueprint = apies_blueprint(
     app,
     [DATAPACKAGE],
     elasticsearch.Elasticsearch([dict(host=ES_HOST, port=ES_PORT)], timeout=60),
-    'jobs',
+    dict(jobs='jobs-job'),
+    'jobs-document',
     dont_highlight={
         'Salary Frequency',
     },

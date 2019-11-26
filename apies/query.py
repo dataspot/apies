@@ -1,5 +1,6 @@
 import demjson
 import json
+from elasticsearch import Elasticsearch
 
 from .logger import logger
 
@@ -7,21 +8,26 @@ from .logger import logger
 # ### QUERY DSL HANDLING
 class Query():
 
-    def __init__(self, types):
+    def __init__(self, search_indexes):
         self.q = {}
-        self.types = types
+        self.types = list(search_indexes.keys())
+        self.indexes = list(search_indexes.values())
 
     def __str__(self):
         return demjson.encode(self.q)
 
-    def run(self, es_client, index_name, debug):
+    def run(self, es_client: Elasticsearch, debug):
         if debug:
             logger.debug('QUERY:\n%s', json.dumps(self.q, indent=2, ensure_ascii=False))
-        return es_client.search(
-                    index=index_name,
-                    doc_type=','.join(self.types),
-                    body=self.q
-               )
+        body = json.dumps(self.q)
+        body = ''.join(
+            '{}\n{}\n'.format(
+                json.dumps(dict(index=index)),
+                body
+            )
+            for index in self.indexes
+        )
+        return es_client.msearch(body)
 
     def must(self):
         return self.q.setdefault('query', {})\

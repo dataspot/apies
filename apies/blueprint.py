@@ -31,8 +31,8 @@ class APIESBlueprint(Blueprint):
     def __init__(self, app,
                  sources,
                  es_client,
-                 index_name,
-                 document_doctype='document',
+                 search_indexes,
+                 document_index,
                  dont_highlight=[],
                  text_field_rules=default_rules,
                  multi_match_type='most_fields',
@@ -40,9 +40,9 @@ class APIESBlueprint(Blueprint):
                  debug_queries=False):
         super().__init__('apies', 'apies')
         self.controllers = Controllers(
-            index_name=index_name,
+            search_indexes=search_indexes,
             text_fields=extract_text_fields(sources, text_field_rules),
-            document_doctype=document_doctype,
+            document_index=document_index,
             multi_match_type=multi_match_type,
             multi_match_operator=multi_match_operator,
             dont_highlight=dont_highlight,
