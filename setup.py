@@ -28,6 +28,8 @@ INSTALL_REQUIRES = [
     'datapackage',
     'flask_jsonpify',
     'demjson',
+    'xlwt',
+    'xlsxwriter'
 ]
 LINT_REQUIRES = [
     'pylama',

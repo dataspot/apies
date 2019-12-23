@@ -12,7 +12,43 @@ apies is a flask blueprint providing an API for accessing and searching an Elast
 
 ### `/search/count`
 
-### `/search/<doctypes>`
+### `/search/<doctypes>
+
+### `download/<doctypes>`
+
+Downloads search results in either csv, xls or xlsx format.
+
+Query parameters that can be send:
+- **types_formatted**: The type of the documents to search
+- **search_term**: The Elastic search query
+- **size**: Number of hits to return
+- **offset**: Whether or not term offsets should be returned
+- **filters**: What offset to use for the pagination
+- **dont_highlight**:
+- **from_date**: If there should be a date range applied to the search, and from what date
+- **to_date**: If there should be a date range applied to the search, and until what date
+- **order**:
+- **file_format**: The format of the file to be returned, either 'csv', 'xls' or 'xlsx'.
+If not passed the file format will be xlsx
+- **file_name**: The name of the file to be returned, by default the name will be 'search_results'
+- **column_mapping**: If the columns should get a different name then in the
+original data, a column map can be send, for example:
+```
+{
+  "עיר": "address.city",
+  "תקציב": "details.budget"
+}
+```
+
+For example, get a csv file with column mapping:
+```
+http://localhost:5000/api/download/jobs?q=engineering&size=2&file_format=csv&file_name=my_results&column_mapping={%22mispar%22:%22Job%20ID%22}
+```
+
+Or get an xslx file without column mapping:
+```
+http://localhost:5000/api/download/jobs?q=engineering&size=2&file_format=xlsx&file_name=my_results
+```
 
 ## configuration
 
