@@ -208,17 +208,21 @@ class Query():
         if isinstance(filters, list):
             for i in filters:
                 bool_clause = {}
-                type_name = 'all'
+                type_names = ['all']
                 for k, v in i.items():
                     if k == '_type':
-                        type_name = v
+                        if not isinstance(v, list):
+                            type_names = [v]
+                        else:
+                            type_names = v
                     else:
                         clause, positive = self.parse_filter_op(k, v)
                         if positive:
                             bool_clause.setdefault('must', []).append(clause)
                         else:
                             bool_clause.setdefault('must_not', []).append(clause)
-                should_clauses.setdefault(type_name, []).append(dict(bool=bool_clause))
+                for type_name in type_names:
+                    should_clauses.setdefault(type_name, []).append(dict(bool=bool_clause))
         for type_name in self.types:
             self.must(type_name).append(
                 dict(
