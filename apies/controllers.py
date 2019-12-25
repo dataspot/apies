@@ -141,17 +141,15 @@ class Controllers():
         query_results = query.run(es_client, self.debug_queries)
         query_results = query_results['responses']
         hits = []
+        total_overall = 0
         for _type, result in zip(query.types, query_results):
-            result_hits = result.get('hits', {}).get('hits', [])
-            for hit in result_hits:
+            result_hits = result.get('hits', {})
+            for hit in result_hits.get('hits', []):
                 hit['_type'] = _type
                 hits.append(hit)
+            total_overall += result_hits.get('total', {}).get('value', 0)
             if 'hits' not in result or 'hits' not in result['hits']:
                 logger.warning('no hits element for query for type %s: %r', _type, result)
-        total_overall = sum(
-            results['hits']['total']['value']
-            for results in query_results
-        )
 
         default_sort_score = (0,)
         if highlighted:
