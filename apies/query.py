@@ -10,6 +10,7 @@ class Query():
 
     def __init__(self, search_indexes):
         self.types = list(search_indexes.keys())
+        self.filtered_type_names = set(self.types)
         self.indexes = list(search_indexes.values())
         self.q = dict((t, {}) for t in self.types)
 
@@ -26,6 +27,7 @@ class Query():
                 json.dumps(self.q[t])
             )
             for t, index in zip(self.types, self.indexes)
+            if t in self.filtered_type_names
         )
         return es_client.msearch(body)
 
@@ -208,7 +210,7 @@ class Query():
         if isinstance(filters, list):
             for i in filters:
                 bool_clause = {}
-                type_names = ['all']
+                type_names = self.types
                 for k, v in i.items():
                     if k == '_type':
                         if not isinstance(v, list):
@@ -223,14 +225,15 @@ class Query():
                             bool_clause.setdefault('must_not', []).append(clause)
                 for type_name in type_names:
                     should_clauses.setdefault(type_name, []).append(dict(bool=bool_clause))
-        for type_name in self.types:
+        for type_name, clause in should_clauses.items():
             self.must(type_name).append(
                 dict(
                     bool=dict(
-                        should=should_clauses.get(type_name, []) + should_clauses.get('all', [])
+                        should=clause
                     )
                 )
             )
+        self.filtered_type_names = set(should_clauses.keys())
         return self
 
     def apply_time_range(self, from_date, to_date):
