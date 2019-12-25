@@ -202,6 +202,7 @@ class Controllers():
                 .apply_filters(filters)\
                 .apply_pagination(0, 0)\
                 .apply_time_range(from_date, to_date)\
+                .apply_exact_total()\
                 .run(es_client, self.debug_queries)
             counts[id] = dict(
                 total_overall=sum(

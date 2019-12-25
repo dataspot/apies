@@ -257,6 +257,11 @@ class Query():
                 ])
         return self
 
+    def apply_exact_total(self):
+        for type_name in self.types:
+            self.q[type_name]['track_total_hits'] = True
+        return self
+
     def apply_month_aggregates(self):
         for type_name in self.types:
             self.q[type_name].setdefault('aggs', {}).update(dict(
