@@ -1,3 +1,5 @@
+from .logger import logger
+
 import elasticsearch
 
 from .query import Query
@@ -140,9 +142,12 @@ class Controllers():
         query_results = query_results['responses']
         hits = []
         for _type, result in zip(query.types, query_results):
-            for hit in result['hits']['hits']:
+            result_hits = result.get('hits', {}).get('hits', [])
+            for hit in result_hits:
                 hit['_type'] = _type
                 hits.append(hit)
+            if 'hits' not in result or 'hits' not in result['hits']:
+                logger.warning('no hits element for query for type %s: %r', _type, result)
         total_overall = sum(
             results['hits']['total']['value']
             for results in query_results
