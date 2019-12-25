@@ -134,6 +134,9 @@ class Controllers():
         else:
             highlighted = False
 
+        # Ensure correct counts
+        query = query.apply_exact_total()
+
         # Apply the time range
         query = query.apply_time_range(from_date, to_date)
 
