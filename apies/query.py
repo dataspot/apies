@@ -55,7 +55,7 @@ class Query():
             )
             matchers = []
 
-            # Multimatch
+            # Multimatch for inexact fields
             matchers.append(dict(
                 multi_match=dict(
                     query=term,
@@ -65,21 +65,15 @@ class Query():
                 )
             ))
 
-            # Common Terms
-            for field in search_fields['natural']:
-                if '^' in field:
-                    name, boost = field.split('^')
-                else:
-                    name, boost = field, 1.0
-                matchers.append(dict(
-                    common={
-                        name: dict(
-                            query=term,
-                            boost=float(boost),
-                            cutoff_frequency=0.001,
-                        )
-                    }
-                ))
+            # Multimatch for natural fields
+            matchers.append(dict(
+                multi_match=dict(
+                    query=term,
+                    fields=[f for f in search_fields['natural']],
+                    type=multi_match_type,
+                    operator=multi_match_operator
+                )
+            ))
             # Tuples
             parts = term.split()
             parts = [term] + parts + [' '.join(z) for z in zip(parts[:-1], parts[1:])]
