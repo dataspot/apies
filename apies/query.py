@@ -78,11 +78,20 @@ class Query():
             parts = term.split()
             parts = [term] + parts + [' '.join(z) for z in zip(parts[:-1], parts[1:])]
             for field in search_fields['exact']:
-                matchers.append(dict(
-                    terms={
-                        field: tuple(set(parts))
-                    }
-                ))
+                fparts = field.split('^')
+                if len(fparts) == 1:
+                    matchers.append(dict(
+                        terms={
+                            field: tuple(set(parts))
+                        }
+                    ))
+                else:
+                    matchers.append(dict(
+                        terms={
+                            fparts[0]: tuple(set(parts)),
+                            'boost': float(fparts[1])
+                        }
+                    ))
 
             # Apply boosters
             if len(matchers) > 0:
