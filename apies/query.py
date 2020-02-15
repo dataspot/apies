@@ -59,21 +59,13 @@ class Query():
             matchers.append(dict(
                 multi_match=dict(
                     query=term,
-                    fields=[f for f in search_fields['inexact']],
+                    fields=[f for f in search_fields['inexact'] + search_fields['natural']],
                     type=multi_match_type,
-                    operator=multi_match_operator
+                    operator=multi_match_operator,
+                    tie_breaker=0.3
                 )
             ))
 
-            # Multimatch for natural fields
-            matchers.append(dict(
-                multi_match=dict(
-                    query=term,
-                    fields=[f for f in search_fields['natural']],
-                    type=multi_match_type,
-                    operator=multi_match_operator
-                )
-            ))
             # Tuples
             parts = term.split()
             parts = [term] + parts + [' '.join(z) for z in zip(parts[:-1], parts[1:])]

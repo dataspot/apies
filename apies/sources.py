@@ -10,7 +10,7 @@ def _process_field(field: Field, rules, ret, prefix):
         field = copy(field)
         field['type'] = field['es:itemType']
         return _process_field(field, rules, ret, prefix)
-    enabled = field.get('es:index', True)
+    enabled = field.get('es:index', True) and not field.get('es:exclude', False)
     subschema = {'fields': []}
     if enabled:
         if schema_type == 'object':
