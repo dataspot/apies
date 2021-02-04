@@ -38,6 +38,22 @@ class Query():
                         .setdefault('bool', {})\
                         .setdefault('must', [])
 
+    def should(self, t):
+        return self.q[t].setdefault('query', {})\
+                        .setdefault('function_score', {})\
+                        .setdefault('query', {})\
+                        .setdefault('bool', {'minimum_should_match': 1})\
+                        .setdefault('should', [])
+
+    def filter(self, t):
+        return self.q[t].setdefault('query', {})\
+                        .setdefault('function_score', {})\
+                        .setdefault('query', {})\
+                        .setdefault('bool', {})\
+                        .setdefault('filter', {})\
+                        .setdefault('bool', {})\
+                        .setdefault('should', [])
+
     def must_not(self, t):
         return self.q[t].setdefault('query', {})\
                         .setdefault('function_score', {})\
@@ -187,23 +203,24 @@ class Query():
                 )
         return ret, must
 
-    def apply_filters(self, filters):
-        if not filters:
-            return self
 
-        if isinstance(filters, str):
-            if filters.startswith('[') and filters.endswith(']'):
+    def _process_complex(self, param):
+        if not param:
+            return None
+
+        if isinstance(param, str):
+            if param.startswith('[') and filparamters.endswith(']'):
                 pass
-            elif not filters.startswith('{'):
-                filters = '{' + filters + '}'
-            filters = demjson.decode(filters)
+            elif not param.startswith('{'):
+                param = '{' + param + '}'
+            param = demjson.decode(param)
 
-        if isinstance(filters, dict):
-            filters = [filters]
-
-        should_clauses = dict()
-        if isinstance(filters, list):
-            for i in filters:
+        if isinstance(param, dict):
+            param = [param]
+        
+        if isinstance(param, list):
+            should_clauses = dict()
+            for i in param:
                 bool_clause = {}
                 type_names = self.types
                 for k, v in i.items():
@@ -220,8 +237,28 @@ class Query():
                             bool_clause.setdefault('must_not', []).append(clause)
                 for type_name in type_names:
                     should_clauses.setdefault(type_name, []).append(dict(bool=bool_clause))
+            return should_clauses
+        
+        return None
+
+
+    def apply_filters(self, filters):
+        should_clauses = self._process_complex(filters)
+        if not should_clauses:
+            return self
+
         for type_name, clause in should_clauses.items():
-            self.must(type_name).append(
+            self.filter(type_name).append(clause)
+        self.filtered_type_names = set(should_clauses.keys())
+        return self
+
+    def apply_lookup(self, lookup):
+        should_clauses = self._process_complex(lookup)
+        if not should_clauses:
+            return self
+
+        for type_name, clause in should_clauses.items():
+            self.should(type_name).append(
                 dict(
                     bool=dict(
                         should=clause

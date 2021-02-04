@@ -122,7 +122,7 @@ You can start a local development server by following these steps:
    You can test that data was loaded:
    ```bash
    $ curl -s http://localhost:9200/jobs-job/_count?pretty
-        {
+    {
         "count" : 1757,
         "_shards" : {
             "total" : 1,
@@ -130,7 +130,7 @@ You can start a local development server by following these steps:
             "skipped" : 0,
             "failed" : 0
         }
-        }
+    }
    ```
 5. Start the sample server
    ```bash

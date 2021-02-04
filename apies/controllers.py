@@ -101,6 +101,7 @@ class Controllers():
                size,
                offset,
                filters,
+               lookup,
                score_threshold=0,
                sort_fields=None):
         search_indexes = self._validate_types(types)
@@ -114,6 +115,9 @@ class Controllers():
 
         # Apply the filters
         query = query.apply_filters(filters)
+
+        # Apply the lookup
+        query = query.apply_lookup(lookup)
 
         # Apply sorting - if there are fields to sort by, apply the scoring as the sorting
         if sort_fields is None:

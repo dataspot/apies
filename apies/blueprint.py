@@ -98,6 +98,7 @@ class APIESBlueprint(Blueprint):
         try:
             types_formatted = str(types).split(',')
             filters = request.values.get('filter')
+            lookup = request.values.get('lookup')
             search_term = request.values.get('q')
             from_date = request.values.get('from_date')
             to_date = request.values.get('to_date')
@@ -107,7 +108,7 @@ class APIESBlueprint(Blueprint):
             result = self.controllers.search(
                 es_client, types_formatted, search_term,
                 from_date, to_date, size, offset, filters,
-                score_threshold=0, sort_fields=order
+                lookup, score_threshold=0, sort_fields=order
             )
         except Exception as e:
             logger.exception('Error searching %s for types: %s ' % (search_term, str(types)))

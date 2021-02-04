@@ -24,7 +24,7 @@ INSTALL_REQUIRES = [
     'Flask>=1,<2',
     'Flask-Cors>=3.0.7,<4.0.0',
     'requests>=2.20.1,<3.0.0',
-    'elasticsearch>=5.0.0,<6.0.0',
+    'elasticsearch>=7.0.0,<8.0.0',
     'datapackage',
     'flask_jsonpify',
     'demjson',
