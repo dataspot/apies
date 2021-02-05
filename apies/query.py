@@ -197,13 +197,12 @@ class Query():
                 )
         return ret, must
 
-
     def _process_complex(self, param):
         if not param:
             return None
 
         if isinstance(param, str):
-            if param.startswith('[') and filparamters.endswith(']'):
+            if param.startswith('[') and param.endswith(']'):
                 pass
             elif not param.startswith('{'):
                 param = '{' + param + '}'
@@ -211,7 +210,7 @@ class Query():
 
         if isinstance(param, dict):
             param = [param]
-        
+
         if isinstance(param, list):
             should_clauses = dict()
             for i in param:
@@ -232,9 +231,8 @@ class Query():
                 for type_name in type_names:
                     should_clauses.setdefault(type_name, []).append(dict(bool=bool_clause))
             return should_clauses
-        
-        return None
 
+        return None
 
     def apply_filters(self, filters):
         should_clauses = self._process_complex(filters)
