@@ -31,34 +31,28 @@ class Query():
         )
         return es_client.msearch(body)
 
-    def must(self, t):
+    def query_bool(self, t):
         return self.q[t].setdefault('query', {})\
                         .setdefault('function_score', {})\
                         .setdefault('query', {})\
-                        .setdefault('bool', {})\
+                        .setdefault('bool', {})
+
+    def must(self, t):
+        return self.query_bool(t)\
                         .setdefault('must', [])
 
     def should(self, t):
-        return self.q[t].setdefault('query', {})\
-                        .setdefault('function_score', {})\
-                        .setdefault('query', {})\
-                        .setdefault('bool', {'minimum_should_match': 1})\
+        return self.query_bool(t)\
                         .setdefault('should', [])
 
     def filter(self, t):
-        return self.q[t].setdefault('query', {})\
-                        .setdefault('function_score', {})\
-                        .setdefault('query', {})\
-                        .setdefault('bool', {})\
+        return self.query_bool(t)\
                         .setdefault('filter', {})\
                         .setdefault('bool', {})\
                         .setdefault('should', [])
 
     def must_not(self, t):
-        return self.q[t].setdefault('query', {})\
-                        .setdefault('function_score', {})\
-                        .setdefault('query', {})\
-                        .setdefault('bool', {})\
+        return self.query_bool(t)\
                         .setdefault('must_not', [])
 
     def apply_term(self, term, text_fields,
@@ -265,6 +259,7 @@ class Query():
                     )
                 )
             )
+            self.query_bool(type_name)['minimum_should_match'] = 1
         self.filtered_type_names = set(should_clauses.keys())
         return self
 
