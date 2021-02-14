@@ -102,6 +102,7 @@ class Controllers():
                offset,
                filters,
                lookup,
+               term_context,
                score_threshold=0,
                sort_fields=None):
         search_indexes = self._validate_types(types)
@@ -112,6 +113,9 @@ class Controllers():
                 term, self.text_fields,
                 multi_match_type=self.multi_match_type,
                 multi_match_operator=self.multi_match_operator)
+
+        if term_context:
+            query = query.apply_term_context(term_context, self.text_fields)
 
         # Apply the filters
         query = query.apply_filters(filters)

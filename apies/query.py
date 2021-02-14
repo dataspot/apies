@@ -48,8 +48,8 @@ class Query():
     def filter(self, t):
         return self.query_bool(t)\
                         .setdefault('filter', {})\
-                        .setdefault('bool', {})\
-                        .setdefault('should', [])
+                        .setdefault('bool', {})
+                        
 
     def must_not(self, t):
         return self.query_bool(t)\
@@ -103,6 +103,27 @@ class Query():
                         minimum_should_match=1
                     )
                 ))
+
+        return self
+
+    def apply_term_context(self, terms, text_fields):
+        multi_match_type='most_fields'
+        multi_match_operator='or'                            
+        for type_name in self.types:
+            search_fields = text_fields[type_name]
+            search_fields = [
+                x[1] for x in search_fields if x[0] == 'inexact'
+            ]
+            matcher = dict(
+                multi_match=dict(
+                    query=terms,
+                    fields=search_fields,
+                    type=multi_match_type,
+                    operator=multi_match_operator,
+                    tie_breaker=0.3
+                )
+            )
+            self.filter(type_name).setdefault('must', []).append(matcher)
 
         return self
 
@@ -240,7 +261,7 @@ class Query():
             return self
 
         for type_name, clause in should_clauses.items():
-            self.filter(type_name).append(clause)
+            self.filter(type_name).setdefault('should', []).append(clause)
         self.filtered_type_names = set(should_clauses.keys())
         return self
 
