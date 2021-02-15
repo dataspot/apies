@@ -132,11 +132,13 @@ class APIESBlueprint(Blueprint):
         try:
             types_formatted = str(types).split(',')
             search_term = request.values.get('q')
+            term_context = request.values.get('context')
             from_date = request.values.get('from_date')
             to_date = request.values.get('to_date')
             size = request.values.get('size', 10)
             offset = request.values.get('offset', 0)
             filters = request.values.get('filter')
+            lookup = request.values.get('lookup')
             order = request.values.get('order')
 
             # Get the query results
@@ -148,6 +150,8 @@ class APIESBlueprint(Blueprint):
                                              size,
                                              offset,
                                              filters,
+                                             lookup,
+                                             term_context,
                                              score_threshold=0,
                                              sort_fields=order)
 
@@ -202,8 +206,9 @@ class APIESBlueprint(Blueprint):
             search_term = request.values.get('q')
             from_date = request.values.get('from_date')
             to_date = request.values.get('to_date')
+            term_context = request.values.get('context')
             result = self.controllers.count(
-                es_client, search_term, from_date, to_date, config
+                es_client, search_term, from_date, to_date, config, term_context
             )
         except Exception as e:
             logger.exception('Error counting with config %r', config)

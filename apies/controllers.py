@@ -103,6 +103,7 @@ class Controllers():
                filters,
                lookup,
                term_context,
+               *,
                score_threshold=0,
                sort_fields=None):
         search_indexes = self._validate_types(types)
@@ -196,7 +197,7 @@ class Controllers():
             search_results=search_results
         )
 
-    def count(self, es_client, term, from_date, to_date, config):
+    def count(self, es_client, term, from_date, to_date, config, term_context):
         counts = {}
         for item in config:
             doc_types = item['doc_types']
@@ -210,6 +211,8 @@ class Controllers():
                     multi_match_type=self.multi_match_type,
                     multi_match_operator=self.multi_match_operator
                 )
+            if term_context:
+                query_results = query_results.apply_term_context(term_context, self.text_fields)
             query_results = query_results\
                 .apply_filters(filters)\
                 .apply_pagination(0, 0)\
