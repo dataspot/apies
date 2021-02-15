@@ -138,7 +138,7 @@ class Controllers():
         # Apply highlighting
         if term and self.dont_highlight != '*' and '*' not in self.dont_highlight:
             highlighted = True
-            query = query.apply_highlighting()
+            query = query.apply_highlighting(term, self.text_fields)
         else:
             highlighted = False
 

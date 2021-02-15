@@ -49,7 +49,6 @@ class Query():
         return self.query_bool(t)\
                         .setdefault('filter', {})\
                         .setdefault('bool', {})
-                        
 
     def must_not(self, t):
         return self.query_bool(t)\
@@ -107,8 +106,8 @@ class Query():
         return self
 
     def apply_term_context(self, terms, text_fields):
-        multi_match_type='most_fields'
-        multi_match_operator='or'                            
+        multi_match_type = 'most_fields'
+        multi_match_operator = 'or'
         for type_name in self.types:
             search_fields = text_fields[type_name]
             search_fields = [
@@ -168,10 +167,16 @@ class Query():
             })
         return self
 
-    def apply_highlighting(self):
+    def apply_highlighting(self, term, search_fields):
         for type_name in self.types:
             self.q[type_name]['highlight'] = dict(
-                fields={'*': {}}
+                fields={'*': {}},
+                highlight_query=dict(
+                    multi_match=dict(
+                        query=term,
+                        fields=[f for k, f in search_fields[type_name] if k in ('inexact', 'natural')],
+                    )
+                )
             )
         return self
 
