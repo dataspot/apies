@@ -165,28 +165,22 @@ class Controllers():
         hits = [j[1] for j in sorted(hits, key=lambda i: i[0])]
 
         default_sort_score = (0,)
-        if highlighted:
-            search_results = [
-                dict(
-                    source=self._merge_highlight_into_source(
-                        hit['_source'],
-                        hit['highlight'],
-                        self.dont_highlight
-                    ),
-                    type=hit['_type'],
-                    score=hit['_score'] or hit.get('sort', default_sort_score)[0]
-                )
-                for hit in hits
-            ]
-        else:
-            search_results = [
-                dict(
-                    source=hit['_source'],
-                    type=hit['_type'],
-                    score=hit['_score'] or hit.get('sort', default_sort_score)[0]
-                )
-                for hit in hits
-            ]
+        search_results = [
+            dict(
+                source=self._merge_highlight_into_source(
+                    hit['_source'],
+                    hit['highlight'],
+                    self.dont_highlight
+                ),
+                type=hit['_type'],
+                score=hit['_score'] or hit.get('sort', default_sort_score)[0]
+            ) if 'highlight' in hit else dict(
+                source=hit['_source'],
+                type=hit['_type'],
+                score=hit['_score'] or hit.get('sort', default_sort_score)[0]
+            )
+            for hit in hits
+        ]
 
         return dict(
             search_counts=dict(
