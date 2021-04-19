@@ -48,7 +48,7 @@ class Query():
     def filter(self, t):
         return self.query_bool(t)\
                         .setdefault('filter', {})\
-                        .setdefault('bool', dict(minimum_should_match=1))
+                        .setdefault('bool', {})
 
     def must_not(self, t):
         return self.query_bool(t)\
@@ -266,7 +266,10 @@ class Query():
             return self
 
         for type_name, clauses in should_clauses.items():
-            self.filter(type_name).setdefault('should', []).extend(clauses)
+            if len(clauses) > 0:
+                flt = self.filter(type_name)
+                flt.setdefault('should', []).extend(clauses)
+                flt['minimum_should_match'] = 1
         self.filtered_type_names = set(should_clauses.keys())
         return self
 
