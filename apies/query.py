@@ -151,8 +151,8 @@ class Query():
             q.setdefault('min_score', score_threshold)
             if isinstance(sort_fields, str):
                 if sort_fields[0] == '-':
-                    sort_fields = sort_fields[1:]
-                    sort = {sort_fields: {'order': 'desc'}}
+                    trimmed_fields = sort_fields[1:]
+                    sort = {trimmed_fields: {'order': 'desc'}}
                 else:
                     sort = {sort_fields: {'order': 'asc'}}
             else:
