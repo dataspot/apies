@@ -21,6 +21,10 @@ class Query():
         if debug:
             logger.debug('QUERY (for %s):\n%s', self.types[0],
                          json.dumps(self.q[self.types[0]], indent=2, ensure_ascii=False))
+            if len(self.types) > 1:
+                logger.debug('QUERY (for %s):\n%s', self.types[-1],
+                            json.dumps(self.q[self.types[-1]], indent=2, ensure_ascii=False))
+
         body = ''.join(
             '{}\n{}\n'.format(
                 json.dumps(dict(index=index)),
