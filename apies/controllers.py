@@ -151,12 +151,15 @@ class Controllers():
         query_results = query_results['responses']
         hits = []
         total_overall = 0
+        search_counts = dict()
         for _type, result in zip(query.types, query_results):
             result_hits = result.get('hits', {})
             for i, hit in enumerate(result_hits.get('hits', [])):
                 hit['_type'] = _type
                 hits.append((i, hit))
-            total_overall += result_hits.get('total', {}).get('value', 0)
+            count = result_hits.get('total', {}).get('value', 0)
+            total_overall += count
+            search_counts[_type] = dict(total_overall=count)
             if 'hits' not in result or 'hits' not in result['hits']:
                 logger.warning('no hits element for query for type %s: %r', _type, result)
         hits = [j[1] for j in sorted(hits, key=lambda i: i[0])]
@@ -179,12 +182,11 @@ class Controllers():
             for hit in hits
         ]
 
+        search_counts['_current'] = dict(
+            total_overall=total_overall
+        )
         return dict(
-            search_counts=dict(
-                _current=dict(
-                    total_overall=total_overall
-                )
-            ),
+            search_counts=search_counts,
             search_results=search_results
         )
 
