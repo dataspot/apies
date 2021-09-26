@@ -55,8 +55,6 @@ class APIESBlueprint(Blueprint):
             logger.setLevel(logging.DEBUG)
         else:
             logger.setLevel(logging.INFO)
-        logger.error('DEBUG')
-        logger.debug('DEBUG')
 
         self.add_url_rule(
             '/get/<path:doc_id>',

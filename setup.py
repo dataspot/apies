@@ -36,7 +36,7 @@ LINT_REQUIRES = [
 ]
 TESTS_REQUIRE = [
     'tox',
-    'dataflows-elasticsearch',
+    'dataflows-elasticsearch>=0.1.0',
 ]
 README = read('README.md')
 VERSION = read(PACKAGE, 'VERSION')
