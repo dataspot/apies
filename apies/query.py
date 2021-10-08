@@ -189,7 +189,7 @@ class Query():
         parts = k.split('__')
         op = None
 
-        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like'):
+        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like', 'bounded'):
             op = parts[-1]
             k = '__'.join(parts[:-1])
 
@@ -202,6 +202,21 @@ class Query():
                 ret = dict(
                     match={
                         k: v
+                    }
+                )
+            elif op == 'bounded':
+                ret = dict(
+                    geo_bounding_box={
+                        k: {
+                            'top_left': dict(
+                                lat=v[0][1],
+                                lon=v[0][0],
+                            ),
+                            'bottom_right': dict(
+                                lat=v[1][1],
+                                lon=v[1][0],
+                            )
+                        }
                     }
                 )
             else:
