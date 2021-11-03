@@ -1,8 +1,7 @@
 from .logger import logger
+from .query import Query
 
 import elasticsearch
-
-from .query import Query
 
 
 # ### HIGHLIGHT HANDLING
@@ -24,7 +23,8 @@ class Controllers():
                  multi_match_type='most_fields',
                  multi_match_operator='and',
                  dont_highlight=tuple(),
-                 debug_queries=False):
+                 debug_queries=False,
+                 query_cls=Query):
 
         self.text_fields = text_fields
         self.search_indexes = search_indexes
@@ -33,6 +33,7 @@ class Controllers():
         self.multi_match_operator = multi_match_operator
         self.dont_highlight = dont_highlight
         self.debug_queries = debug_queries
+        self.query_cls = query_cls
 
     # REPLACEMENTS
     def _prepare_replacements(self, highlighted):
@@ -103,12 +104,13 @@ class Controllers():
                filters,
                lookup,
                term_context,
+               extra,
                *,
                score_threshold=0,
                sort_fields=None):
         search_indexes = self._validate_types(types)
 
-        query = Query(search_indexes)
+        query = self.query_cls(search_indexes)
         if term:
             query = query.apply_term(
                 term, self.text_fields,
@@ -123,6 +125,10 @@ class Controllers():
 
         # Apply the lookup
         query = query.apply_lookup(lookup)
+
+        # Apply extra processing
+        if extra:
+            query = query.apply_extra(extra)
 
         # Apply sorting - if there are fields to sort by, apply the scoring as the sorting
         if sort_fields is None:
@@ -190,14 +196,14 @@ class Controllers():
             search_results=search_results
         )
 
-    def count(self, es_client, term, from_date, to_date, config, term_context):
+    def count(self, es_client, term, from_date, to_date, config, term_context, extra):
         counts = {}
         for item in config:
             doc_types = item['doc_types']
             search_indexes = self._validate_types(doc_types)
             filters = item['filters']
             id = item['id']
-            query_results = Query(search_indexes)
+            query_results = self.query_cls(search_indexes)
             if term:
                 query_results = query_results.apply_term(
                     term, self.text_fields,
@@ -206,12 +212,18 @@ class Controllers():
                 )
             if term_context:
                 query_results = query_results.apply_term_context(term_context, self.text_fields)
+
             query_results = query_results\
                 .apply_filters(filters)\
                 .apply_pagination(0, 0)\
                 .apply_time_range(from_date, to_date)\
-                .apply_exact_total()\
-                .run(es_client, self.debug_queries)
+                .apply_exact_total()
+
+            # Apply extra processing
+            if extra:
+                query_results = query_results.apply_extra(extra)
+
+            query_results = query_results.run(es_client, self.debug_queries)
             counts[id] = dict(
                 total_overall=sum(
                     results['hits']['total']['value']
@@ -226,7 +238,7 @@ class Controllers():
                  types, term, from_date, to_date, filters):
         search_indexes = self._validate_types(types)
 
-        query_results = Query(search_indexes)\
+        query_results = self.query_cls(search_indexes)\
             .apply_term(
                 term, text_fields,
                 multi_match_type=self.multi_match_type,

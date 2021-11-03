@@ -10,6 +10,7 @@ from .controllers import Controllers
 from .sources import extract_text_fields
 from .logger import logger, logging
 from .utils.file_maker import get_csv, get_xls, get_xlsx
+from .query import Query
 
 
 def default_rules(field):
@@ -40,7 +41,8 @@ class APIESBlueprint(Blueprint):
                  text_field_rules=default_rules,
                  multi_match_type='most_fields',
                  multi_match_operator='and',
-                 debug_queries=False):
+                 debug_queries=False,
+                 query_cls=Query):
         super().__init__('apies', 'apies')
         self.controllers = Controllers(
             search_indexes=search_indexes,
@@ -49,7 +51,8 @@ class APIESBlueprint(Blueprint):
             multi_match_type=multi_match_type,
             multi_match_operator=multi_match_operator,
             dont_highlight=dont_highlight,
-            debug_queries=debug_queries
+            debug_queries=debug_queries,
+            query_cls=query_cls
         )
         if debug_queries:
             logger.setLevel(logging.DEBUG)
@@ -99,6 +102,7 @@ class APIESBlueprint(Blueprint):
             lookup = request.values.get('lookup')
             search_term = request.values.get('q')
             term_context = request.values.get('context')
+            extra = request.values.get('extra')
             from_date = request.values.get('from_date')
             to_date = request.values.get('to_date')
             size = request.values.get('size', 10)
@@ -107,7 +111,7 @@ class APIESBlueprint(Blueprint):
             result = self.controllers.search(
                 es_client, types_formatted, search_term,
                 from_date, to_date, size, offset, filters,
-                lookup, term_context,
+                lookup, term_context, extra,
                 score_threshold=0, sort_fields=order
             )
         except Exception as e:
@@ -131,6 +135,7 @@ class APIESBlueprint(Blueprint):
             types_formatted = str(types).split(',')
             search_term = request.values.get('q')
             term_context = request.values.get('context')
+            extra = request.values.get('extra')
             from_date = request.values.get('from_date')
             to_date = request.values.get('to_date')
             size = request.values.get('size', 10)
@@ -150,6 +155,7 @@ class APIESBlueprint(Blueprint):
                                              filters,
                                              lookup,
                                              term_context,
+                                             extra,
                                              score_threshold=0,
                                              sort_fields=order)
 
@@ -205,8 +211,9 @@ class APIESBlueprint(Blueprint):
             from_date = request.values.get('from_date')
             to_date = request.values.get('to_date')
             term_context = request.values.get('context')
+            extra = request.values.get('extra')
             result = self.controllers.count(
-                es_client, search_term, from_date, to_date, config, term_context
+                es_client, search_term, from_date, to_date, config, term_context, extra
             )
         except Exception as e:
             logger.exception('Error counting with config %r', config)

@@ -347,3 +347,6 @@ class Query():
                 )
             ))
         return self
+
+    def apply_extra(self, extras):
+        return self
