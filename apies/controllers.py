@@ -127,8 +127,7 @@ class Controllers():
         query = query.apply_lookup(lookup)
 
         # Apply extra processing
-        if extra:
-            query = query.apply_extra(extra)
+        query = query.apply_extra(extra)
 
         # Apply sorting - if there are fields to sort by, apply the scoring as the sorting
         if sort_fields is None:
