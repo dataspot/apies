@@ -241,9 +241,10 @@ class APIESBlueprint(Blueprint):
 
     def get_document_handler(self, doc_id):
         es_client = current_app.config['ES_CLIENT']
+        type_ = request.values.get('type')
 
         result = self.controllers.get_document(
-            es_client, doc_id
+            es_client, doc_id, type_
         )
         if result is None:
             logger.warning('Failed to fetch document for %r', doc_id)

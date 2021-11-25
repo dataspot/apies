@@ -263,9 +263,14 @@ class Controllers():
             timeline=timeline
         )
 
-    def get_document(self, es_client, doc_id):
+    def get_document(self, es_client, doc_id, doc_type=None):
         try:
-            result = es_client.get(self.document_index, doc_id)
+            index = self.document_index
+            if doc_type is not None:
+                types = [doc_type]
+                types = self._validate_types(types)
+                index = types[doc_type][0]
+            result = es_client.get(index, doc_id)
             return result.get('_source')
         except elasticsearch.exceptions.NotFoundError:
             return None
