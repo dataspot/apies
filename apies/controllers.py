@@ -269,7 +269,7 @@ class Controllers():
             if doc_type is not None:
                 types = [doc_type]
                 types = self._validate_types(types)
-                index = types[doc_type][0]
+                index = types[doc_type]
             logger.debug('FETCH %r in %s (%r)', doc_id, index, doc_type)
             result = es_client.get(index, doc_id)
             return result.get('_source')
