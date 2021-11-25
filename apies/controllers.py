@@ -270,6 +270,7 @@ class Controllers():
                 types = [doc_type]
                 types = self._validate_types(types)
                 index = types[doc_type][0]
+            logger.debug('FETCH %r in %s (%r)', doc_id, index, doc_type)
             result = es_client.get(index, doc_id)
             return result.get('_source')
         except elasticsearch.exceptions.NotFoundError:
