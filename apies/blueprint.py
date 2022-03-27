@@ -47,7 +47,7 @@ class APIESBlueprint(Blueprint):
         super().__init__('apies', 'apies')
         self.controllers = Controllers(
             search_indexes=search_indexes,
-            text_fields=extract_text_fields(sources, text_field_rules, text_field_select),
+            text_fields=extract_text_fields(sources, text_field_rules, text_field_select, debug_queries),
             document_index=document_index,
             multi_match_type=multi_match_type,
             multi_match_operator=multi_match_operator,

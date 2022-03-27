@@ -3,6 +3,8 @@ from copy import copy
 from datapackage import Package, Resource
 from tableschema import Field
 
+from .logger import logger
+
 
 def _process_field(field: Field, rules, field_select, ret, prefix):
     schema_type = field['type']
@@ -30,7 +32,7 @@ def _process_schema(schema, rules, field_select, ret=[], prefix=''):
     return ret
 
 
-def extract_text_fields(sources, text_field_rules, text_field_select):
+def extract_text_fields(sources, text_field_rules, text_field_select, debug=False):
 
     sources = [src if isinstance(src, Package) else Package(src)
                for src in sources]
@@ -44,5 +46,8 @@ def extract_text_fields(sources, text_field_rules, text_field_select):
         schema = resource.schema.descriptor
         text_fields = _process_schema(schema, text_field_rules, type_text_field_select, ret=[])
         ret[type_name] = text_fields
+        if debug:
+            logger.debug('TEXT FIELDS (for %s):\n%s', type_name, ', '.join(map(str, text_fields)))
+
 
     return ret
