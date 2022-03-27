@@ -45,6 +45,12 @@ class APIESBlueprint(Blueprint):
                  debug_queries=False,
                  query_cls=Query):
         super().__init__('apies', 'apies')
+
+        if debug_queries:
+            logger.setLevel(logging.DEBUG)
+        else:
+            logger.setLevel(logging.INFO)
+
         self.controllers = Controllers(
             search_indexes=search_indexes,
             text_fields=extract_text_fields(sources, text_field_rules, text_field_select, debug_queries),
@@ -55,10 +61,6 @@ class APIESBlueprint(Blueprint):
             debug_queries=debug_queries,
             query_cls=query_cls
         )
-        if debug_queries:
-            logger.setLevel(logging.DEBUG)
-        else:
-            logger.setLevel(logging.INFO)
 
         self.add_url_rule(
             '/get/<path:doc_id>',

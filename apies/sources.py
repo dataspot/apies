@@ -47,7 +47,7 @@ def extract_text_fields(sources, text_field_rules, text_field_select, debug=Fals
         text_fields = _process_schema(schema, text_field_rules, type_text_field_select, ret=[])
         ret[type_name] = text_fields
         if debug:
-            logger.debug('TEXT FIELDS (for %s):\n%s', type_name, ', '.join(map(str, text_fields)))
+            logger.info('TEXT FIELDS (for %s):\n%s', type_name, ', '.join(map(str, text_fields)))
 
 
     return ret
