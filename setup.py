@@ -27,7 +27,7 @@ INSTALL_REQUIRES = [
     'elasticsearch>=7.0.0,<8.0.0',
     'datapackage',
     'flask_jsonpify',
-    'demjson',
+    'demjson3',
     'xlwt',
     'xlsxwriter'
 ]
