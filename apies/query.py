@@ -1,4 +1,4 @@
-import demjson
+import demjson3 as demjson
 import json
 from elasticsearch import Elasticsearch
 

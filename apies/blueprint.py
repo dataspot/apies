@@ -4,7 +4,7 @@ from flask import Blueprint, make_response, request, current_app, send_file
 from flask_jsonpify import jsonpify
 from flask.helpers import NotFound
 
-import demjson
+import demjson3 as demjson
 
 from .controllers import Controllers
 from .sources import extract_text_fields
