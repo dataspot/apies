@@ -45,23 +45,24 @@ class Controllers():
         assert False, 'Unknown type %r' % value
 
     def _merge_highlight_into_source(self, source, highlights, highlight, snippets):
-        snippets = dict()
+        _snippets = source.setdefault('_snippets', dict())
+        _highlights = source.setdefault('_highlights', dict())
         for field, highlighted in highlights.items():
             if field in snippets:
-                snippets[field] = highlighted
+                _snippets[field] = highlighted
             elif field in highlight:
                 field_parts = field.split('.')
+                out_field = []
                 src = source
-                field = field_parts[0]
-                while len(field_parts) > 1:
+                while len(field_parts) > 0:
+                    field = field_parts.pop(0, None)
+                    out_field.append(field)
                     if isinstance(src.get(field), dict):
-                        field_parts.pop(0)
                         src = src[field]
-                        field = field_parts[0]
                     else:
                         break
-                src[field] = highlighted[0]
-        source['_snippets'] = snippets
+                out_field = '.'.join(out_field)
+                _highlights[out_field] = highlighted
         return source
 
     # UTILS
