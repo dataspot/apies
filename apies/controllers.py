@@ -49,12 +49,12 @@ class Controllers():
         for field, highlighted in highlights.items():
             if field in snippets:
                 snippets[field] = highlighted
-            else:
+            elif field in highlight:
                 field_parts = field.split('.')
                 src = source
                 field = field_parts[0]
                 while len(field_parts) > 1:
-                    if isinstance(src[field], dict):
+                    if isinstance(src.get(field), dict):
                         field_parts.pop(0)
                         src = src[field]
                         field = field_parts[0]
