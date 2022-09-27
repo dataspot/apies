@@ -62,7 +62,7 @@ class Controllers():
                     else:
                         break
                 out_field = '.'.join(out_field)
-                _highlights[out_field] = highlighted
+                _highlights[out_field] = highlighted[0]
         return source
 
     # UTILS
