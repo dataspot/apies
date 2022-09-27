@@ -55,7 +55,7 @@ class Controllers():
                 out_field = []
                 src = source
                 while len(field_parts) > 0:
-                    field = field_parts.pop(0, None)
+                    field = field_parts.pop(0)
                     out_field.append(field)
                     if isinstance(src.get(field), dict):
                         src = src[field]
