@@ -107,8 +107,8 @@ class APIESBlueprint(Blueprint):
             size = request.values.get('size', 10)
             offset = request.values.get('offset', 0)
             order = request.values.get('order')
-            highlight = request.values.get('highlight', [])
-            snippets = request.values.get('snippets', [])
+            highlight = request.values.get('highlight', '').split(',')
+            snippets = request.values.get('snippets', '').split(',')
             result = self.controllers.search(
                 es_client, types_formatted, search_term,
                 from_date=from_date,
