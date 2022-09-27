@@ -171,14 +171,16 @@ class Query():
             })
         return self
 
-    def apply_highlighting(self, term, search_fields):
+    def apply_highlighting(self, term, highlight, snippets):
         for type_name in self.types:
             self.q[type_name]['highlight'] = dict(
-                fields={'*': {}},
+                fields=dict(
+                    (f, dict() if f in snippets else dict(number_of_fragments=0)) for f in highlight + snippets
+                ),
                 highlight_query=dict(
                     multi_match=dict(
                         query=term,
-                        fields=[f for k, f in search_fields[type_name] if k in ('inexact', 'natural')],
+                        fields=highlight + snippets,
                     )
                 )
             )

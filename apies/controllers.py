@@ -3,17 +3,6 @@ from .query import Query
 
 import elasticsearch
 
-
-# ### HIGHLIGHT HANDLING
-# DONT_HIGHLIGHT = {
-#     'kind',
-#     'kind_he',
-#     'budget_code',
-#     'entity_kind',
-#     'entity_id',
-#     'code',
-# }
-
 class Controllers():
 
     def __init__(self,
@@ -22,7 +11,6 @@ class Controllers():
                  document_index,
                  multi_match_type='most_fields',
                  multi_match_operator='and',
-                 dont_highlight=tuple(),
                  debug_queries=False,
                  query_cls=Query):
 
@@ -31,17 +19,10 @@ class Controllers():
         self.document_index = document_index
         self.multi_match_type = multi_match_type
         self.multi_match_operator = multi_match_operator
-        self.dont_highlight = dont_highlight
         self.debug_queries = debug_queries
         self.query_cls = query_cls
 
     # REPLACEMENTS
-    def _prepare_replacements(self, highlighted):
-        return [
-            (h.replace('<em>', '').replace('</em>', ''), h)
-            for h in highlighted
-        ]
-
     def _do_replacements(self, value, replacements):
         if value is None:
             return None
@@ -63,23 +44,24 @@ class Controllers():
 
         assert False, 'Unknown type %r' % value
 
-    def _merge_highlight_into_source(self, source, highlights, dont_highlight):
+    def _merge_highlight_into_source(self, source, highlights, highlight, snippets):
+        snippets = dict()
         for field, highlighted in highlights.items():
-            if field in dont_highlight:
-                continue
-            highlighted = self._prepare_replacements(highlighted)
-            field_parts = field.split('.')
-            src = source
-            field = field_parts[0]
-            while len(field_parts) > 1:
-                if isinstance(src[field], dict):
-                    field_parts.pop(0)
-                    src = src[field]
-                    field = field_parts[0]
-                else:
-                    break
-
-            src[field] = self._do_replacements(src[field], highlighted)
+            if field in snippets:
+                snippets[field] = highlighted
+            else:
+                field_parts = field.split('.')
+                src = source
+                field = field_parts[0]
+                while len(field_parts) > 1:
+                    if isinstance(src[field], dict):
+                        field_parts.pop(0)
+                        src = src[field]
+                        field = field_parts[0]
+                    else:
+                        break
+                src[field] = highlighted[0]
+        source['_snippets'] = snippets
         return source
 
     # UTILS
@@ -97,17 +79,19 @@ class Controllers():
                es_client,
                types,
                term,
-               from_date,
-               to_date,
-               size,
-               offset,
-               filters,
-               lookup,
-               term_context,
-               extra,
                *,
+               from_date=None,
+               to_date=None,
+               size=10,
+               offset=0,
+               filters=None,
+               lookup=None,
+               term_context=None,
+               extra=None,
                score_threshold=0,
-               sort_fields=None):
+               sort_fields=None,
+               highlight=None,
+               snippets=None):
         search_indexes = self._validate_types(types)
 
         query = self.query_cls(search_indexes)
@@ -142,8 +126,8 @@ class Controllers():
         query = query.apply_pagination(size, offset)
 
         # Apply highlighting
-        if term and self.dont_highlight != '*' and '*' not in self.dont_highlight:
-            query = query.apply_highlighting(term, self.text_fields)
+        if term and highlight or snippets:
+            query = query.apply_highlighting(term, highlight, snippets)
 
         # Ensure correct counts
         query = query.apply_exact_total()
@@ -175,7 +159,8 @@ class Controllers():
                 source=self._merge_highlight_into_source(
                     hit['_source'],
                     hit['highlight'],
-                    self.dont_highlight
+                    highlight,
+                    snippets
                 ),
                 type=hit['_type'],
                 score=hit['_score'] or hit.get('sort', default_sort_score)[0]
@@ -233,35 +218,6 @@ class Controllers():
             search_counts=counts
         )
 
-    def timeline(self, es_client, index_name, text_fields,
-                 types, term, from_date, to_date, filters):
-        search_indexes = self._validate_types(types)
-
-        query_results = self.query_cls(search_indexes)\
-            .apply_term(
-                term, text_fields,
-                multi_match_type=self.multi_match_type,
-                multi_match_operator=self.multi_match_operator
-            )\
-            .apply_filters(filters)\
-            .apply_pagination(0, 0)\
-            .apply_time_range(from_date, to_date)\
-            .apply_month_aggregates()\
-            .run(es_client, self.debug_queries)
-
-        # TODO: combine all responses
-        timeline = query_results['responses'][0].get('aggregations', {}).get('timeline', {}).get('buckets', [])
-        timeline = ((b['key'], b['doc_count'])
-                    for b in timeline
-                    if len(b['key']) == 7)
-        if None not in (from_date, to_date):
-            timeline = filter(lambda k: k[0] >= from_date[:7] and k[0] <= to_date[:7],
-                            timeline)
-        timeline = sorted(timeline)
-
-        return dict(
-            timeline=timeline
-        )
 
     def get_document(self, es_client, doc_id, doc_type=None):
         try:

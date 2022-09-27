@@ -37,7 +37,7 @@ class APIESBlueprint(Blueprint):
                  es_client,
                  search_indexes,
                  document_index,
-                 dont_highlight=[],
+                 dont_highlight=None,
                  text_field_rules=default_rules,
                  text_field_select=None,
                  multi_match_type='most_fields',
@@ -51,13 +51,16 @@ class APIESBlueprint(Blueprint):
         else:
             logger.setLevel(logging.INFO)
 
+        if dont_highlight is not None:
+            # deprecation message:
+            logger.warning('dont_highlight is deprecated, use request parameters instead')
+
         self.controllers = Controllers(
             search_indexes=search_indexes,
             text_fields=extract_text_fields(sources, text_field_rules, text_field_select, debug_queries),
             document_index=document_index,
             multi_match_type=multi_match_type,
             multi_match_operator=multi_match_operator,
-            dont_highlight=dont_highlight,
             debug_queries=debug_queries,
             query_cls=query_cls
         )
@@ -78,13 +81,6 @@ class APIESBlueprint(Blueprint):
             '/search/<string:types>',
             'dynamic_search_handler',
             self.search_handler,
-            methods=['GET']
-        )
-        self.add_url_rule(
-            '/search/timeline/<string:types>/<string:search_term>/'
-            '<string:from_date>/<string:to_date>',
-            'timeline_handler',
-            self.timeline_handler,
             methods=['GET']
         )
         self.add_url_rule(
@@ -111,11 +107,22 @@ class APIESBlueprint(Blueprint):
             size = request.values.get('size', 10)
             offset = request.values.get('offset', 0)
             order = request.values.get('order')
+            highlight = request.values.get('highlight', [])
+            snippets = request.values.get('snippets', [])
             result = self.controllers.search(
                 es_client, types_formatted, search_term,
-                from_date, to_date, size, offset, filters,
-                lookup, term_context, extra,
-                score_threshold=0, sort_fields=order
+                from_date=from_date,
+                to_date=to_date,
+                size=size,
+                offset=offset,
+                filters=filters,
+                lookup=lookup,
+                term_context=term_context,
+                extra=extra,
+                score_threshold=0, 
+                sort_fields=order,
+                highlight=highlight,
+                snippets=snippets
             )
         except Exception as e:
             logger.exception('Error searching %s for types: %s ' % (search_term, str(types)))
@@ -223,23 +230,6 @@ class APIESBlueprint(Blueprint):
             result = {'error': str(e)}
         return jsonpify(result)
 
-    def timeline_handler(self, types, search_term, from_date, to_date):
-        es_client = current_app.config['ES_CLIENT']
-        index_name = current_app.config['INDEX_NAME']
-        text_fields = current_app.config['TEXT_FIELDS']
-
-        try:
-            types_formatted = str(types).split(',')
-            filters = request.values.get('filter')
-            result = self.controllers.timeline(
-                es_client, index_name, text_fields,
-                types_formatted, search_term,
-                from_date, to_date, filters
-            )
-        except Exception as e:
-            logger.exception('Error getting timeline %s for types: %s ' % (search_term, str(types)))
-            result = {'error': str(e)}
-        return jsonpify(result)
 
     def get_document_handler(self, doc_id):
         es_client = current_app.config['ES_CLIENT']
