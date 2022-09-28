@@ -92,15 +92,17 @@ class Controllers():
                score_threshold=0,
                sort_fields=None,
                highlight=None,
-               snippets=None):
+               snippets=None,
+               match_type=None,
+               match_operator=None):
         search_indexes = self._validate_types(types)
 
         query = self.query_cls(search_indexes)
         if term:
             query = query.apply_term(
                 term, self.text_fields,
-                multi_match_type=self.multi_match_type,
-                multi_match_operator=self.multi_match_operator)
+                multi_match_type=match_type or self.multi_match_type,
+                multi_match_operator=match_operator or self.multi_match_operator)
 
         if term_context:
             query = query.apply_term_context(term_context, self.text_fields)

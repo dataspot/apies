@@ -109,6 +109,8 @@ class APIESBlueprint(Blueprint):
             order = request.values.get('order')
             highlight = [x.strip() for x in request.values.get('highlight', '').split(',') if x]
             snippets = [x.strip() for x in request.values.get('snippets', '').split(',') if x]
+            match_type = request.values.get('match_type')
+            match_operator = request.values.get('match_operator')
             result = self.controllers.search(
                 es_client, types_formatted, search_term,
                 from_date=from_date,
@@ -122,7 +124,9 @@ class APIESBlueprint(Blueprint):
                 score_threshold=0, 
                 sort_fields=order,
                 highlight=highlight,
-                snippets=snippets
+                snippets=snippets,
+                match_type=match_type,
+                match_operator=match_operator,
             )
         except Exception as e:
             logger.exception('Error searching %s for types: %s ' % (search_term, str(types)))
