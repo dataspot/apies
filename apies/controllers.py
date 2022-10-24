@@ -139,8 +139,8 @@ class Controllers():
         query = query.apply_time_range(from_date, to_date)
 
         # Execute the query
-        query_results = query.run(es_client, self.debug_queries)
-        query_results = query_results['responses']
+        results = query.run(es_client, self.debug_queries)
+        query_results = results['responses']
         hits = []
         total_overall = 0
         search_counts = dict()
@@ -178,10 +178,12 @@ class Controllers():
         search_counts['_current'] = dict(
             total_overall=total_overall
         )
-        return dict(
+        ret = dict(
             search_counts=search_counts,
             search_results=search_results
         )
+        query.process_extra(ret, results)
+        return ret
 
     def count(self, es_client, term, from_date, to_date, config, term_context, extra):
         counts = {}

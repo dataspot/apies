@@ -352,3 +352,6 @@ class Query():
 
     def apply_extra(self, extras):
         return self
+
+    def process_extra(self, return_value, response):
+        return self
