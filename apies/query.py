@@ -191,7 +191,7 @@ class Query():
         parts = k.split('__')
         op = None
 
-        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like', 'bounded'):
+        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like', 'bounded', 'all'):
             op = parts[-1]
             k = '__'.join(parts[:-1])
 
@@ -219,6 +219,12 @@ class Query():
                                 lon=v[1][0],
                             )
                         }
+                    }
+                )
+            elif op == 'all':
+                ret = dict(
+                    terms_set={
+                        k: v
                     }
                 )
             else:
