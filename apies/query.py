@@ -226,7 +226,9 @@ class Query():
                     terms_set={
                         k: dict(
                             terms=v,
-                            minimum_should_match_script=str(len(v))
+                            minimum_should_match_script=dict(
+                                source=str(len(v))
+                            )
                         )
                     }
                 )
