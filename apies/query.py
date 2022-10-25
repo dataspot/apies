@@ -223,9 +223,12 @@ class Query():
                 )
             elif op == 'all':
                 ret = dict(
-                    terms_set={
-                        k: v
-                    }
+                    terms_set=dict(
+                        terms={
+                            k: v
+                        },
+                        minimum_should_match_script=str(len(v))
+                    )
                 )
             else:
                 ret = dict(
