@@ -188,6 +188,7 @@ class Query():
 
     def parse_filter_op(self, k, v):
         must = True
+        parts = k.split('#')[0]
         parts = k.split('__')
         op = None
 
