@@ -188,8 +188,8 @@ class Query():
 
     def parse_filter_op(self, k, v):
         must = True
-        parts = k.split('#')[0]
-        parts = parts.split('__')
+        k = k.split('#')[0]
+        parts = k.split('__')
         op = None
 
         if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like', 'bounded', 'all'):
