@@ -91,6 +91,8 @@ class APIESBlueprint(Blueprint):
         )
 
         app.config['ES_CLIENT'] = es_client
+        self.json = demjson.JSON()
+        self.json.set_hook('decode_float', float)
 
     def search_handler(self, types):
         es_client = current_app.config['ES_CLIENT']
@@ -220,7 +222,7 @@ class APIESBlueprint(Blueprint):
 
         config = request.values.get('config')
         try:
-            config = demjson.decode(config)
+            config = self.json.decode(config)
             search_term = request.values.get('q')
             from_date = request.values.get('from_date')
             to_date = request.values.get('to_date')

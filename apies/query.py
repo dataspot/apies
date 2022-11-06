@@ -13,9 +13,12 @@ class Query():
         self.filtered_type_names = set(self.types)
         self.indexes = list(search_indexes.values())
         self.q = dict((t, {}) for t in self.types)
+        self.json = demjson.JSON()
+        self.json.set_hook('decode_float', float)
+
 
     def __str__(self):
-        return demjson.encode(self.q)
+        return self.json.encode(self.q)
 
     def run(self, es_client: Elasticsearch, debug):
         if debug:
@@ -265,7 +268,7 @@ class Query():
                 pass
             elif not param.startswith('{'):
                 param = '{' + param + '}'
-            param = demjson.decode(param)
+            param = self.json.decode(param)
 
         if isinstance(param, dict):
             param = [param]
