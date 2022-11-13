@@ -113,6 +113,8 @@ class APIESBlueprint(Blueprint):
             snippets = [x.strip() for x in request.values.get('snippets', '').split(',') if x]
             match_type = request.values.get('match_type')
             match_operator = request.values.get('match_operator')
+            score_threshold = int(request.values.get('minscore', 0))
+
             result = self.controllers.search(
                 es_client, types_formatted, search_term,
                 from_date=from_date,
@@ -123,7 +125,7 @@ class APIESBlueprint(Blueprint):
                 lookup=lookup,
                 term_context=term_context,
                 extra=extra,
-                score_threshold=0, 
+                score_threshold=score_threshold, 
                 sort_fields=order,
                 highlight=highlight,
                 snippets=snippets,
@@ -159,6 +161,7 @@ class APIESBlueprint(Blueprint):
             filters = request.values.get('filter')
             lookup = request.values.get('lookup')
             order = request.values.get('order')
+            score_threshold = int(request.values.get('minscore', 0))
 
             # Get the query results
             result = self.controllers.search(es_client,
@@ -172,7 +175,7 @@ class APIESBlueprint(Blueprint):
                                              lookup,
                                              term_context,
                                              extra,
-                                             score_threshold=0,
+                                             score_threshold=score_threshold,
                                              sort_fields=order)
 
         except Exception as e:

@@ -121,7 +121,7 @@ class Controllers():
             if term:
                 query.apply_scoring()
             else:
-                query.apply_sorting({'score': {'order': 'desc'}}, 0)
+                query.apply_sorting({'score': {'order': 'desc'}}, score_threshold)
         else:
             query.apply_sorting(sort_fields, score_threshold)
 
