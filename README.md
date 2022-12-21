@@ -8,17 +8,98 @@ apies is a flask blueprint providing an API for accessing and searching an Elast
 
 ## endpoints
 
-### `/get`
+### `/get/<doc-id>`
+
+Fetches a document from the index.
+
+Query parameters that can be used:
+- **type**: The type of the document to fetch (if not `docs`)
 
 ### `/search/count`
 
-### `/search/<doctypes>
+### `/search/<doc-types>`
+
+Performs a search on the index.
+
+`doc-types` is a comma separated list of document types to search.
+
+Query parameters that can be used:
+- **q**: The full text search textual query
+
+- **filter**: A JSON object with filters to apply to the search. These are applied to the query but don't affect the scoring of the results.
+  Filters should be an array of objects, each object depicting a single filter. All filters are combined with an `OR` operator. For example:
+    ```
+    [
+        {
+            "first-name": "John",
+            "last-name": "Watson"
+        },
+        {
+            "first-name": "Sherlock",
+            "last-name": "Holmes"
+        }
+    ]
+    ```
+  Each object contains a set of rules that all must match. Each rule is a key-value pair, where the key is the field name and the value is the value to match. The value can be a string or an array of strings. If the value is an array, the rule will match if any of the values in the array match. For example:
+    ```
+    {
+        "first-name": ["Emily", "Charlotte"],
+        "last-name": "Bronte"
+    }
+    ```
+  Field names can be appended with two underscores and an operator to convey other relations other than equality. For example:
+    ```
+    {
+        "first-name": "Emily",
+        "last-name": "Bronte",
+        "age__gt": 30,
+    }
+    ```
+  Allowed operators are:
+  ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like', 'bounded', 'all'):
+    - `gt`: greater than
+    - `gte`: greater than or equal to
+    - `lt`: less than
+    - `lte`: less than or equal to
+    - `eq`: equal to
+    - `not`: not equal to
+    - `like`: like (textual match)
+    - `bounded`: bounded (geospatial match to a bounding box)
+    - `all`: all (for arrays - all values in the array must exist in the target)
+
+  If multiple operators are needed for the same field, the field can also be suffixed by a hashtag and a number. For example:
+    ```
+    {
+        "city": "San Francisco",
+        "price__lt": 300000,
+        "bedrooms__gt": 4,
+        "amenities": "garage",
+        "amenities#1": ["pool", "back yard"],
+    }
+    ```
+    The above filter will match all documents where the `city` is "San Francisco", `price` is less than 300000, more than 4 `bedrooms`, the `amenities` field contains 'garage' and at least one of "pool" and "back yard".
+
+- **lookup**: A JSON object with lookup filters to apply to the search. These filter the results, but also affect the scoring of the results.
+- **context**: A textual context to search in (i.e. run the search in a subset of results matching the full-text-search query provided in this field)
+
+- **extra**: Extra information that's passed to library extensions
+
+- **size**: Number of results to fetch (default: 10)
+- **offset**: Offset of first result to fetch (default: 0)
+- **order**: Order results by (default: _score)
+
+- **highlight**: Commas separated list of fields to highlight
+- **snippets**: Commas separated list of fields to fetch snippets from
+
+- **match_type**: ElasticSearch match type (default: most_fields)
+- **match_operator**: ElasticSearch match operator (default: and)
+- **minscore**: Minimum score for a result to be returned (default: 0.0)
 
 ### `download/<doctypes>`
 
 Downloads search results in either csv, xls or xlsx format.
 
-Query parameters that can be send:
+Query parameters that can be used:
 - **types_formatted**: The type of the documents to search
 - **search_term**: The Elastic search query
 - **size**: Number of hits to return
