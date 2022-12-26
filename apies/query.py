@@ -147,8 +147,7 @@ class Query():
         return self
 
     def apply_sorting(self, sort_fields, score_threshold):
-        # Apply the scoring threshold - since we are no longer sorting by score, it is important to use a score
-        # threshold so as not to get irrelevant results
+        # Apply the scoring threshold so as not to get irrelevant results
         for type_name in self.types:
             q = self.q[type_name]
             q.setdefault('min_score', score_threshold)
@@ -161,6 +160,8 @@ class Query():
             else:
                 sort = sort_fields
 
+            if isinstance(sort, dict):
+                sort = [sort]
             # Then sort by the sort fields, for example - {'__last_modified_at': {'order': 'desc'}}
             q.setdefault('sort', sort)
 
