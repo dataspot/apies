@@ -113,9 +113,6 @@ class Controllers():
         # Apply the lookup
         query = query.apply_lookup(lookup)
 
-        # Apply extra processing
-        query = query.apply_extra(extra)
-
         # Apply sorting - if there are fields to sort by, apply the scoring as the sorting
         if sort_fields is None:
             if term:
@@ -132,6 +129,9 @@ class Controllers():
         # Apply highlighting
         if term and highlight or snippets:
             query = query.apply_highlighting(term, highlight, snippets)
+
+        # Apply extra processing
+        query = query.apply_extra(extra)
 
         # Ensure correct counts
         query = query.apply_exact_total()
