@@ -58,14 +58,15 @@ class Controllers():
                 while len(field_parts) > 0:
                     field = field_parts.pop(0)
                     out_field.append(field)
-                    if isinstance(src[0].get(field), list):
-                        as_list = True
-                        src_ = []
-                        for s in src:
-                            src_.extend(s[field])
-                        src = src_
-                    elif isinstance(src[0], dict):
-                        src = [s[field] for s in src]
+                    if all(isinstance(s, dict) for s in src):
+                        if isinstance(src[0].get(field), list):
+                            as_list = True
+                            src_ = []
+                            for s in src:
+                                src_.extend(s[field])
+                            src = src_
+                        else:
+                            src = [s[field] for s in src]
                     else:
                         break
                 out_field = '.'.join(out_field)
