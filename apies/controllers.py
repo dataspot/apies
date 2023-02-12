@@ -53,16 +53,34 @@ class Controllers():
             elif field in highlight:
                 field_parts = field.split('.')
                 out_field = []
-                src = source
+                src = [source]
+                as_list = False
                 while len(field_parts) > 0:
                     field = field_parts.pop(0)
                     out_field.append(field)
-                    if isinstance(src.get(field), dict):
-                        src = src[field]
+                    if isinstance(src[0].get(field), list):
+                        as_list = True
+                        src_ = []
+                        for s in src:
+                            src_.extend(s[field])
+                        src = src_
+                    elif isinstance(src[0], dict):
+                        src = [s[field] for s in src]
                     else:
                         break
                 out_field = '.'.join(out_field)
-                _highlights[out_field] = highlighted[0]
+                if as_list:
+                    cleaned = [h.replace('<em>', '').replace('</em>', '') for h in highlighted]
+                    out = []
+                    for s in src:
+                        if s in cleaned:
+                            out.append(highlighted[cleaned.index(s)])
+                        else:
+                            out.append(s)
+                        _highlights[out_field] = out
+                else:
+                    _highlights[out_field] = highlighted[0]
+
         return source
 
     # UTILS
@@ -127,7 +145,7 @@ class Controllers():
         query = query.apply_pagination(size, offset)
 
         # Apply highlighting
-        if term and highlight or snippets:
+        if term and (highlight or snippets):
             query = query.apply_highlighting(term, highlight, snippets)
 
         # Apply extra processing
