@@ -1,8 +1,7 @@
 import json
 
-from flask import Blueprint, make_response, request, current_app, send_file
+from flask import Blueprint, make_response, request, current_app, send_file, abort
 from flask_jsonpify import jsonpify
-from flask.helpers import NotFound
 
 import demjson3 as demjson
 
@@ -249,5 +248,5 @@ class APIESBlueprint(Blueprint):
         )
         if result is None:
             logger.warning('Failed to fetch document for %r', doc_id)
-            raise NotFound()
+            abort(404)
         return jsonpify(result)
