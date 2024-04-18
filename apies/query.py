@@ -196,7 +196,7 @@ class Query():
         parts = k.split('__')
         op = None
 
-        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like', 'bounded', 'all'):
+        if len(parts) > 1 and parts[-1] in ('gt', 'gte', 'lt', 'lte', 'eq', 'not', 'like', 'bounded', 'all', 'exists', 'empty'):
             op = parts[-1]
             k = '__'.join(parts[:-1])
 
@@ -209,6 +209,24 @@ class Query():
                 ret = dict(
                     match={
                         k: v
+                    }
+                )
+            elif op == 'exists':
+                ret = dict(
+                    exists={
+                        'field': k
+                    }
+                )
+            elif op == 'empty':
+                ret = dict(
+                    bool={
+                        'must_not': [
+                            dict(
+                                exists={
+                                    'field': k
+                                }
+                            )
+                        ]
                     }
                 )
             elif op == 'bounded':
