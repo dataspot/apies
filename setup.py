@@ -23,7 +23,7 @@ NAME = PACKAGE.replace('_', '-')
 INSTALL_REQUIRES = [
     'Flask',
     'requests',
-    'elasticsearch>=7.0.0,<8.0.0',
+    'elasticsearch>=7.0.0,<9.0.0',
     'datapackage',
     'flask_jsonpify',
     'demjson3',

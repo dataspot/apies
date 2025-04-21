@@ -36,7 +36,7 @@ class Query():
             for t, index in zip(self.types, self.indexes)
             if t in self.filtered_type_names
         )
-        return es_client.msearch(body)
+        return es_client.msearch(searches=body)
 
     def query_bool(self, t):
         return self.q[t].setdefault('query', {})\
