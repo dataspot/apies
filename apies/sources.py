@@ -16,7 +16,7 @@ def _process_field(field: Field, rules, field_select, ret, prefix):
     subschema = {'fields': []}
     if enabled:
         if schema_type == 'object':
-            subschema = field['es:schema']
+            subschema = field.get('es:schema') or dict(fields=[])
             _process_schema(subschema, rules, field_select, ret, prefix + field['name'] + '.')
         elif schema_type == 'string':
             search_field = prefix + field['name']
